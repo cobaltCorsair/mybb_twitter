@@ -1,5 +1,11 @@
 from flask_mongoengine import MongoEngine
-from mongoengine import StringField, IntField, DateTimeField, ListField, ReferenceField, CASCADE
+from mongoengine import StringField, IntField, DateTimeField, ListField, ReferenceField, CASCADE, BooleanField
+
+db = MongoEngine()
+
+
+from flask_mongoengine import MongoEngine
+from mongoengine import StringField, IntField, DateTimeField, ListField, ReferenceField, CASCADE, BooleanField
 
 db = MongoEngine()
 
@@ -8,11 +14,12 @@ class User(db.Document):
     """
     User db class
     """
-    username = StringField(max_length=255)
-    forum_id = IntField()
+    username = StringField(max_length=255, unique=True)
+    forum_id = IntField(unique=True)
     message = StringField()
     comment = StringField()
     ignored_users = ListField(ReferenceField('self'))
+    banned = BooleanField(default=False)
 
 
 class Message(db.Document):
