@@ -1,6 +1,7 @@
 from typing import Optional
 from mongoengine import DoesNotExist
 
+from admins import ADMIN_IDS
 from models import User, Message
 
 
@@ -26,6 +27,21 @@ class UserService:
         user = User.objects.get(forum_id=user_id)
         new_message = Message(user=user, content=content)
         new_message.save()
+
+    def delete_message(self, message_id: str, user_id: int) -> None:
+        message = Message.objects.get(id=message_id)
+        if message.user.forum_id == user_id or user_id in ADMIN_IDS:
+            message.delete()
+
+    def edit_message(self, message_id: str, user_id: int, new_content: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        if not user:
+            raise DoesNotExist("User does not exist")
+        message = Message.objects.get(id=message_id)
+        if message.user.forum_id != user_id:
+            raise PermissionError("User does not have permission to edit this message")
+        message.content = new_content
+        message.save()
 
     def ban_user(self, user_id: int) -> None:
         user = User.objects.get(forum_id=user_id)

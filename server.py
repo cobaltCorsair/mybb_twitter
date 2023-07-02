@@ -1,6 +1,7 @@
 from typing import Optional, Any
 from flask import request, jsonify
 from flask.views import MethodView
+from flask_cors import cross_origin
 
 from models import User
 from user_functions import UserService
@@ -10,6 +11,7 @@ user_service = UserService()
 
 
 class UserView(MethodView):
+    @cross_origin()
     def post(self) -> tuple[Any, int]:
         """
         Create a new user or return an existing one.
@@ -30,6 +32,7 @@ class UserView(MethodView):
 
 
 class MessageView(MethodView):
+    @cross_origin()
     def post(self) -> tuple[Any, int]:
         """
         Create a new message for a user.
@@ -57,8 +60,34 @@ class MessageView(MethodView):
 
         return jsonify({"message": f"Message has been created for user {username}."}), 201
 
+    @cross_origin()
+    def delete(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        message_id: str = data.get('message_id')
+        user_id: int = data.get('user_id')
+
+        user_service.delete_message(message_id, user_id)
+
+        return jsonify({"message": f"Message with id {message_id} has been deleted."}), 200
+
+    @cross_origin()
+    def put(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        message_id: str = data.get('message_id')
+        user_id: int = data.get('user_id')
+        new_content: str = data.get('new_content')
+
+        user_service.edit_message(message_id, user_id, new_content)
+
+        return jsonify({"message": f"Message with id {message_id} has been edited."}), 200
+
 
 class BanUserView(MethodView):
+    @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
         """
         Ban a user.
@@ -72,6 +101,7 @@ class BanUserView(MethodView):
 
 
 class UnbanUserView(MethodView):
+    @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
         """
         Unban a user.
@@ -84,10 +114,12 @@ class UnbanUserView(MethodView):
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
 
 
-app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'))
-app.add_url_rule('/create_message', view_func=MessageView.as_view('create_message'))
-app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'))
-app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'))
+app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'), methods=['POST', 'DELETE', 'PUT'])
+app.add_url_rule('/create_message', view_func=MessageView.as_view('create_message'), methods=['POST', 'DELETE', 'PUT'])
+app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'),
+                 methods=['POST', 'DELETE', 'PUT'])
+app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'),
+                 methods=['POST', 'DELETE', 'PUT'])
 
 if __name__ == "__main__":
     app.run()

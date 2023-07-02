@@ -97,6 +97,17 @@ docs = ["pallets-sphinx-themes", "sphinx", "sphinx-issues", "sphinxcontrib-log-c
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-cors"
+version = "4.0.0"
+description = "A Flask extension adding a decorator for CORS support"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Flask = ">=0.9"
+
+[[package]]
 name = "flask-mongoengine"
 version = "1.0.0"
 description = "Flask-MongoEngine is a Flask extension that provides integration with MongoEngine and WTF model forms."
@@ -253,7 +264,7 @@ email = ["email-validator"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "98866a555292cae131cef0df4edf28dfa8e2357a87b20df41396a6b16ff77022"
+content-hash = "5e9d67680a3e472bea4e656212f2d846df23e218fa7ef9ab14f725f9d1959d08"
 
 [metadata.files]
 asgiref = [
@@ -283,6 +294,10 @@ email-validator = [
 flask = [
     {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},
     {file = "Flask-1.1.2.tar.gz", hash = "sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060"},
+]
+flask-cors = [
+    {file = "Flask-Cors-4.0.0.tar.gz", hash = "sha256:f268522fcb2f73e2ecdde1ef45e2fd5c71cc48fe03cffb4b441c6d1b40684eb0"},
+    {file = "Flask_Cors-4.0.0-py2.py3-none-any.whl", hash = "sha256:bc3492bfd6368d27cfe79c7821df5a8a319e1a6d5eab277a3794be19bdc51783"},
 ]
 flask-mongoengine = [
     {file = "flask-mongoengine-1.0.0.tar.gz", hash = "sha256:ce68726d2be8d88006e88f17e4be3b7ad07c79ca8dedb60653d3dab5d9485840"},

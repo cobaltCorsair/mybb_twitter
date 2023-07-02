@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
@@ -7,4 +8,5 @@ app.config['MONGODB_SETTINGS'] = {
     'host': 'localhost',
     'port': 27017
 }
+cors = CORS(app)
 db = MongoEngine(app)
