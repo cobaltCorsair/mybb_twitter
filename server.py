@@ -114,6 +114,83 @@ class CreateCommentView(MethodView):
         return jsonify({"message": f"Comment has been created for message {message_id}."}), 201
 
 
+class DeleteCommentView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        """
+        Delete a comment.
+
+        :param self: An instance of DeleteCommentView.
+        :return: A tuple containing a message and an HTTP status code.
+        """
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        comment_id: str = data.get('comment_id')
+
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
+
+        user_service.delete_comment(comment_id, user_id)
+
+        return jsonify({"message": f"Comment {comment_id} has been deleted."}), 200
+
+
+class LikeMessageView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        """
+        Like a message.
+
+        :param self: An instance of LikeMessageView.
+        :return: A tuple containing a message and an HTTP status code.
+        """
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+
+        user_service.like(user_id, message_id, 1)
+
+        return jsonify({"message": f"Message with id {message_id} has been liked."}), 200
+
+
+class RemoveLikeMessageView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        """
+        Remove like/dislike from a message.
+
+        :param self: An instance of RemoveLikeMessageView.
+        :return: A tuple containing a message and an HTTP status code.
+        """
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+
+        user_service.remove_like(user_id, message_id)
+
+        return jsonify({"message": f"Like/dislike has been removed from message with id {message_id}."}), 200
+
+
+class GetMessageLikesView(MethodView):
+    @cross_origin()
+    def get(self, message_id: str) -> tuple[Any, int]:
+        """
+        Get the number of likes for a message.
+
+        :param self: An instance of GetMessageLikesView.
+        :param message_id: The ID of the message.
+        :return: A tuple containing a message and an HTTP status code.
+        """
+        likes = user_service.get_likes(message_id)
+        return jsonify({"likes": likes}), 200
+
+
 class BanUserView(MethodView):
     @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
@@ -149,7 +226,10 @@ app.add_url_rule('/update_message', view_func=UpdateMessageView.as_view('update_
 app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'), methods=['POST'])
 app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'), methods=['POST'])
 app.add_url_rule('/create_comment', view_func=CreateCommentView.as_view('create_comment'), methods=['POST'])
-
+app.add_url_rule('/delete_comment', view_func=DeleteCommentView.as_view('delete_comment'), methods=['POST'])
+app.add_url_rule('/like_message', view_func=LikeMessageView.as_view('like_message'), methods=['POST'])
+app.add_url_rule('/remove_like_message', view_func=RemoveLikeMessageView.as_view('remove_like_message'), methods=['POST'])
+app.add_url_rule('/get_message_likes/<string:message_id>', view_func=GetMessageLikesView.as_view('get_message_likes'), methods=['GET'])
 
 if __name__ == "__main__":
     app.run()
