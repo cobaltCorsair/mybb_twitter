@@ -5,7 +5,6 @@ from flask_cors import cross_origin
 
 from models import User
 from user_functions import UserService
-from server_settings import app, db
 
 user_service = UserService()
 
@@ -218,18 +217,3 @@ class UnbanUserView(MethodView):
         user_service.unban_user(user_id)
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
 
-
-app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'), methods=['POST'])
-app.add_url_rule('/create_message', view_func=CreateMessageView.as_view('create_message'), methods=['POST'])
-app.add_url_rule('/delete_message', view_func=DeleteMessageView.as_view('delete_message'), methods=['POST'])
-app.add_url_rule('/update_message', view_func=UpdateMessageView.as_view('update_message'), methods=['POST'])
-app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'), methods=['POST'])
-app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'), methods=['POST'])
-app.add_url_rule('/create_comment', view_func=CreateCommentView.as_view('create_comment'), methods=['POST'])
-app.add_url_rule('/delete_comment', view_func=DeleteCommentView.as_view('delete_comment'), methods=['POST'])
-app.add_url_rule('/like_message', view_func=LikeMessageView.as_view('like_message'), methods=['POST'])
-app.add_url_rule('/remove_like_message', view_func=RemoveLikeMessageView.as_view('remove_like_message'), methods=['POST'])
-app.add_url_rule('/get_message_likes/<string:message_id>', view_func=GetMessageLikesView.as_view('get_message_likes'), methods=['GET'])
-
-if __name__ == "__main__":
-    app.run()

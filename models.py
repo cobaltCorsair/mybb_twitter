@@ -21,8 +21,8 @@ class Like(EmbeddedDocument):
     """
     Like db class
     """
-    user = ReferenceField(User, reverse_delete_rule=CASCADE)
-    value = IntField()  # 1 for like, -1 for dislike
+    user = ReferenceField(User)
+    value = IntField()  # 1 for like
 
 
 class Message(db.Document):
