@@ -22,7 +22,7 @@ class UserView(MethodView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('id')
+        user_id: int = data.get('user_id')
         username: str = data.get('username')
 
         if user_service.user_exists(user_id):
@@ -43,7 +43,7 @@ class CreateMessageView(MethodView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('id')
+        user_id: int = data.get('user_id')
         username: str = data.get('username')
         content: str = data.get('content')
 
