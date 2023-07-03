@@ -90,6 +90,30 @@ class UpdateMessageView(MethodView):
         return jsonify({"message": f"Message with id {message_id} has been edited."}), 200
 
 
+class CreateCommentView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        """
+        Create a new comment for a message.
+
+        :param self: An instance of CommentView.
+        :return: A tuple containing a message and an HTTP status code.
+        """
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+        content: str = data.get('content')
+
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
+
+        user_service.create_comment(user_id, message_id, content)
+
+        return jsonify({"message": f"Comment has been created for message {message_id}."}), 201
+
+
 class BanUserView(MethodView):
     @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
@@ -124,6 +148,8 @@ app.add_url_rule('/delete_message', view_func=DeleteMessageView.as_view('delete_
 app.add_url_rule('/update_message', view_func=UpdateMessageView.as_view('update_message'), methods=['POST'])
 app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'), methods=['POST'])
 app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'), methods=['POST'])
+app.add_url_rule('/create_comment', view_func=CreateCommentView.as_view('create_comment'), methods=['POST'])
+
 
 if __name__ == "__main__":
     app.run()

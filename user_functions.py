@@ -2,7 +2,7 @@ from typing import Optional
 from mongoengine import DoesNotExist
 
 from admins import ADMIN_IDS
-from models import User, Message
+from models import User, Message, Comment
 
 
 class UserService:
@@ -42,6 +42,12 @@ class UserService:
             raise PermissionError("User does not have permission to edit this message")
         message.content = new_content
         message.save()
+
+    def create_comment(self, user_id: int, message_id: str, content: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        message = Message.objects.get(id=message_id)
+        new_comment = Comment(user=user, message=message, content=content)
+        new_comment.save()
 
     def ban_user(self, user_id: int) -> None:
         user = User.objects.get(forum_id=user_id)
