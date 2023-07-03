@@ -8,5 +8,6 @@ app.config['MONGODB_SETTINGS'] = {
     'host': 'localhost',
     'port': 27017
 }
-cors = CORS(app)
+cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-Type"],
+                                    "methods": ["GET", "POST"]}})
 db = MongoEngine(app)

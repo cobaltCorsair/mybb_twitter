@@ -31,7 +31,7 @@ class UserView(MethodView):
         return jsonify({"message": f"User {username} has been added to the database."}), 201
 
 
-class MessageView(MethodView):
+class CreateMessageView(MethodView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         """
@@ -60,8 +60,10 @@ class MessageView(MethodView):
 
         return jsonify({"message": f"Message has been created for user {username}."}), 201
 
+
+class DeleteMessageView(MethodView):
     @cross_origin()
-    def delete(self) -> tuple[Any, int]:
+    def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
@@ -72,8 +74,10 @@ class MessageView(MethodView):
 
         return jsonify({"message": f"Message with id {message_id} has been deleted."}), 200
 
+
+class UpdateMessageView(MethodView):
     @cross_origin()
-    def put(self) -> tuple[Any, int]:
+    def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
@@ -114,12 +118,12 @@ class UnbanUserView(MethodView):
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
 
 
-app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'), methods=['POST', 'DELETE', 'PUT'])
-app.add_url_rule('/create_message', view_func=MessageView.as_view('create_message'), methods=['POST', 'DELETE', 'PUT'])
-app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'),
-                 methods=['POST', 'DELETE', 'PUT'])
-app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'),
-                 methods=['POST', 'DELETE', 'PUT'])
+app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'), methods=['POST'])
+app.add_url_rule('/create_message', view_func=CreateMessageView.as_view('create_message'), methods=['POST'])
+app.add_url_rule('/delete_message', view_func=DeleteMessageView.as_view('delete_message'), methods=['POST'])
+app.add_url_rule('/update_message', view_func=UpdateMessageView.as_view('update_message'), methods=['POST'])
+app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user'), methods=['POST'])
+app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user'), methods=['POST'])
 
 if __name__ == "__main__":
     app.run()
