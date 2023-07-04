@@ -160,7 +160,7 @@ class RemoveLikeMessageView(MethodView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         """
-        Remove like/dislike from a message.
+        Remove like from a message.
 
         :param self: An instance of RemoveLikeMessageView.
         :return: A tuple containing a message and an HTTP status code.
@@ -173,10 +173,9 @@ class RemoveLikeMessageView(MethodView):
 
         try:
             user_service.remove_like(user_id, message_id)
-            return jsonify({"message": f"Like/dislike has been removed from message with id {message_id}."}), 200
+            return jsonify({"message": f"Like has been removed from message with id {message_id}."}), 200
         except ValueError:
             return jsonify({"message": "User has not liked this message"}), 400
-
 
 
 class GetMessageLikesView(MethodView):
@@ -219,4 +218,3 @@ class UnbanUserView(MethodView):
         """
         user_service.unban_user(user_id)
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
-
