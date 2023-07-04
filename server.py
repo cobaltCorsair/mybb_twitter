@@ -171,9 +171,12 @@ class RemoveLikeMessageView(MethodView):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
 
-        user_service.remove_like(user_id, message_id)
+        try:
+            user_service.remove_like(user_id, message_id)
+            return jsonify({"message": f"Like/dislike has been removed from message with id {message_id}."}), 200
+        except ValueError:
+            return jsonify({"message": "User has not liked this message"}), 400
 
-        return jsonify({"message": f"Like/dislike has been removed from message with id {message_id}."}), 200
 
 
 class GetMessageLikesView(MethodView):

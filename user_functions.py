@@ -68,8 +68,12 @@ class UserService:
     def remove_like(self, user_id: int, message_id: str) -> None:
         user = User.objects.get(forum_id=user_id)
         message = Message.objects.get(id=message_id)
-        message.likes = [like for like in message.likes if like.user != user]
-        message.save()
+        # Check if the user has liked the message
+        if any(like for like in message.likes if like.user.forum_id == user_id):
+            message.likes = [like for like in message.likes if like.user.forum_id != user_id]
+            message.save()
+        else:
+            raise ValueError("User has not liked this message")
 
     def ban_user(self, user_id: int) -> None:
         user = User.objects.get(forum_id=user_id)
