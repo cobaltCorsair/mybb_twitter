@@ -13,14 +13,15 @@ class UserService:
         except DoesNotExist:
             return False
 
-    def create_user(self, user_id: int, username: str) -> None:
-        new_user = User(username=username, forum_id=user_id)
+    def create_user(self, user_id: int, username: str, avatar_url: str) -> None:
+        new_user = User(username=username, forum_id=user_id, avatar_url=avatar_url)
         new_user.save()
 
-    def update_username(self, user_id: int, username: str) -> None:
+    def update_username_and_avatar(self, user_id: int, username: str, avatar_url: str) -> None:
         user = User.objects.get(forum_id=user_id)
-        if user.username != username:
+        if user.username != username or user.avatar_url != avatar_url:
             user.username = username
+            user.avatar_url = avatar_url
             user.save()
 
     def create_message(self, user_id: int, content: str) -> None:

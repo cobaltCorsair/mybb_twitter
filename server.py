@@ -23,12 +23,13 @@ class UserView(MethodView):
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
         username: str = data.get('username')
+        avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
 
         if user_service.user_exists(user_id):
+            user_service.update_username_and_avatar(user_id, username, avatar_url)
             return jsonify({"message": f"User {username} already exists in the database."}), 200
-        user_service.create_user(user_id, username)
+        user_service.create_user(user_id, username, avatar_url)
         return jsonify({"message": f"User {username} has been added to the database."}), 201
-
 
 class CreateMessageView(MethodView):
     @cross_origin()
@@ -44,12 +45,13 @@ class CreateMessageView(MethodView):
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
         username: str = data.get('username')
+        avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
         content: str = data.get('content')
 
         if not user_service.user_exists(user_id):
-            user_service.create_user(user_id, username)
+            user_service.create_user(user_id, username, avatar_url)
         else:
-            user_service.update_username(user_id, username)
+            user_service.update_username_and_avatar(user_id, username, avatar_url)
 
         user = User.objects.get(forum_id=user_id)
         if user.banned:

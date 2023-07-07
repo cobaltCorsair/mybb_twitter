@@ -10,6 +10,7 @@ class User(db.Document):
     User db class
     """
     username = StringField(max_length=255, unique=True)
+    avatar_url = StringField()  # New field for avatar URL
     forum_id = IntField(unique=True)
     message = StringField()
     comment = StringField()
