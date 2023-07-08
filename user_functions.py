@@ -85,3 +85,36 @@ class UserService:
         user = User.objects.get(forum_id=user_id)
         user.banned = False
         user.save()
+
+    def ignore_user(self, user_id: int, ignored_user_id: int) -> None:
+        if not User.objects.filter(forum_id=user_id).exists():
+            raise ValueError(f"User with id {user_id} does not exist")
+
+        if not User.objects.filter(forum_id=ignored_user_id).exists():
+            raise ValueError(f"User to ignore with id {ignored_user_id} does not exist")
+
+        user = User.objects.get(forum_id=user_id)
+        ignored_user = User.objects.get(forum_id=ignored_user_id)
+        if ignored_user not in user.ignored_users:
+            user.ignored_users.append(ignored_user)
+            user.save()
+
+    def unignore_user(self, user_id: int, ignored_user_id: int) -> None:
+        if not User.objects.filter(forum_id=user_id).exists():
+            raise ValueError(f"User with id {user_id} does not exist")
+
+        if not User.objects.filter(forum_id=ignored_user_id).exists():
+            raise ValueError(f"User to unignore with id {ignored_user_id} does not exist")
+
+        user = User.objects.get(forum_id=user_id)
+        ignored_user = User.objects.get(forum_id=ignored_user_id)
+        if ignored_user in user.ignored_users:
+            user.ignored_users.remove(ignored_user)
+            user.save()
+
+    def get_ignored_users(self, user_id: int) -> list:
+        if not User.objects.filter(forum_id=user_id).exists():
+            raise ValueError(f"User with id {user_id} does not exist")
+
+        user = User.objects.get(forum_id=user_id)
+        return [ignored_user.forum_id for ignored_user in user.ignored_users]

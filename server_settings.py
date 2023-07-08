@@ -27,6 +27,9 @@ app.add_url_rule('/remove_like_message',
                  view_func=RemoveLikeMessageView.as_view('remove_like_message'), methods=['POST'])
 app.add_url_rule('/get_message_likes/<string:message_id>',
                  view_func=GetMessageLikesView.as_view('get_message_likes'), methods=['GET'])
+app.add_url_rule('/ignore_user', view_func=IgnoreUserView.as_view('ignore_user'), methods=['POST'])
+app.add_url_rule('/unignore_user', view_func=UnignoreUserView.as_view('unignore_user'), methods=['POST'])
+app.add_url_rule('/get_ignored_users/<int:user_id>', view_func=GetIgnoredUsersView.as_view('get_ignored_users'), methods=['GET'])
 
 if __name__ == "__main__":
     app.run()

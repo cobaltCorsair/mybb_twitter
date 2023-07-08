@@ -31,6 +31,7 @@ class UserView(MethodView):
         user_service.create_user(user_id, username, avatar_url)
         return jsonify({"message": f"User {username} has been added to the database."}), 201
 
+
 class CreateMessageView(MethodView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
@@ -220,3 +221,50 @@ class UnbanUserView(MethodView):
         """
         user_service.unban_user(user_id)
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
+
+
+class IgnoreUserView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        ignored_user_id: int = data.get('ignored_user_id')
+
+        try:
+            user_service.ignore_user(user_id, ignored_user_id)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+
+        return jsonify(
+            {"message": f"User with id {ignored_user_id} has been added to ignore list of user {user_id}."}), 200
+
+
+class UnignoreUserView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        ignored_user_id: int = data.get('ignored_user_id')
+
+        try:
+            user_service.unignore_user(user_id, ignored_user_id)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+
+        return jsonify(
+            {"message": f"User with id {ignored_user_id} has been removed from ignore list of user {user_id}."}), 200
+
+
+class GetIgnoredUsersView(MethodView):
+    @cross_origin()
+    def get(self, user_id: int) -> tuple[Any, int]:
+        try:
+            ignored_users = user_service.get_ignored_users(user_id)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+
+        return jsonify({"ignored_users": ignored_users}), 200
