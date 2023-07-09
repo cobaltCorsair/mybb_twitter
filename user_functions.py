@@ -2,7 +2,7 @@ from typing import Optional
 from mongoengine import DoesNotExist
 
 from admins import ADMIN_IDS
-from models import User, Message, Comment, Like
+from models import User, Message, Comment, Like, Report, Notification
 
 
 class UserService:
@@ -58,6 +58,9 @@ class UserService:
     def like(self, user_id: int, message_id: str, value: int) -> None:
         user = User.objects.get(forum_id=user_id)
         message = Message.objects.get(id=message_id)
+        # Check if the user has already liked the message
+        if any(like for like in message.likes if like.user.forum_id == user_id):
+            raise ValueError("User has already liked this message")
         like = Like(user=user, value=value)
         message.likes.append(like)
         message.save()
@@ -87,10 +90,10 @@ class UserService:
         user.save()
 
     def ignore_user(self, user_id: int, ignored_user_id: int) -> None:
-        if not User.objects.filter(forum_id=user_id).exists():
+        if User.objects(forum_id=user_id).count() == 0:
             raise ValueError(f"User with id {user_id} does not exist")
 
-        if not User.objects.filter(forum_id=ignored_user_id).exists():
+        if User.objects(forum_id=ignored_user_id).count() == 0:
             raise ValueError(f"User to ignore with id {ignored_user_id} does not exist")
 
         user = User.objects.get(forum_id=user_id)
@@ -100,10 +103,10 @@ class UserService:
             user.save()
 
     def unignore_user(self, user_id: int, ignored_user_id: int) -> None:
-        if not User.objects.filter(forum_id=user_id).exists():
+        if User.objects(forum_id=user_id).count() == 0:
             raise ValueError(f"User with id {user_id} does not exist")
 
-        if not User.objects.filter(forum_id=ignored_user_id).exists():
+        if User.objects(forum_id=ignored_user_id).count() == 0:
             raise ValueError(f"User to unignore with id {ignored_user_id} does not exist")
 
         user = User.objects.get(forum_id=user_id)
@@ -113,8 +116,35 @@ class UserService:
             user.save()
 
     def get_ignored_users(self, user_id: int) -> list:
-        if not User.objects.filter(forum_id=user_id).exists():
+        if User.objects(forum_id=user_id).count() == 0:
             raise ValueError(f"User with id {user_id} does not exist")
 
         user = User.objects.get(forum_id=user_id)
         return [ignored_user.forum_id for ignored_user in user.ignored_users]
+
+    def report_message(self, user_id: int, message_id: str, reason: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        message = Message.objects.get(id=message_id)
+        new_report = Report(user=user, message=message, reason=reason)
+        new_report.save()
+
+    def report_comment(self, user_id: int, comment_id: str, reason: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        comment = Comment.objects.get(id=comment_id)
+        new_report = Report(user=user, comment=comment, reason=reason)
+        new_report.save()
+
+    def get_top_users(self) -> list:
+        return list(User.objects.order_by('-message', '-comment', '-likes'))
+
+    def get_recent_messages(self) -> list:
+        return list(Message.objects.order_by('-created_at'))
+
+    def send_notification(self, user_id: int, text: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        new_notification = Notification(user=user, text=text)
+        new_notification.save()
+
+    def get_message_comments(self, message_id: str) -> list:
+        message = Message.objects.get(id=message_id)
+        return list(Comment.objects(message=message))

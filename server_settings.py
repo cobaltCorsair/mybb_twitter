@@ -30,6 +30,13 @@ app.add_url_rule('/get_message_likes/<string:message_id>',
 app.add_url_rule('/ignore_user', view_func=IgnoreUserView.as_view('ignore_user'), methods=['POST'])
 app.add_url_rule('/unignore_user', view_func=UnignoreUserView.as_view('unignore_user'), methods=['POST'])
 app.add_url_rule('/get_ignored_users/<int:user_id>', view_func=GetIgnoredUsersView.as_view('get_ignored_users'), methods=['GET'])
+app.add_url_rule('/report_message', view_func=ReportMessageView.as_view('report_message'), methods=['POST'])
+app.add_url_rule('/report_comment', view_func=ReportCommentView.as_view('report_comment'), methods=['POST'])
+app.add_url_rule('/get_top_users', view_func=GetTopUsersView.as_view('get_top_users'), methods=['GET'])
+app.add_url_rule('/get_recent_messages', view_func=GetRecentMessagesView.as_view('get_recent_messages'), methods=['GET'])
+app.add_url_rule('/send_notification', view_func=SendNotificationView.as_view('send_notification'), methods=['POST'])
+app.add_url_rule('/get_message_comments/<string:message_id>', view_func=GetMessageCommentsView.as_view('get_message_comments'), methods=['GET'])
+
 
 if __name__ == "__main__":
     app.run()

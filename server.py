@@ -154,9 +154,12 @@ class LikeMessageView(MethodView):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
 
-        user_service.like(user_id, message_id, 1)
+        try:
+            user_service.like(user_id, message_id, 1)
+            return jsonify({"message": f"Message with id {message_id} has been liked."}), 200
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
 
-        return jsonify({"message": f"Message with id {message_id} has been liked."}), 200
 
 
 class RemoveLikeMessageView(MethodView):
@@ -268,3 +271,68 @@ class GetIgnoredUsersView(MethodView):
             return jsonify({"message": str(e)}), 400
 
         return jsonify({"ignored_users": ignored_users}), 200
+
+
+class ReportMessageView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+        reason: str = data.get('reason')
+
+        user_service.report_message(user_id, message_id, reason)
+
+        return jsonify({"message": f"Message with id {message_id} has been reported."}), 200
+
+
+class ReportCommentView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        comment_id: str = data.get('comment_id')
+        reason: str = data.get('reason')
+
+        user_service.report_comment(user_id, comment_id, reason)
+
+        return jsonify({"message": f"Comment with id {comment_id} has been reported."}), 200
+
+
+class GetTopUsersView(MethodView):
+    @cross_origin()
+    def get(self) -> tuple[Any, int]:
+        top_users = user_service.get_top_users()
+        return jsonify({"top_users": [user.forum_id for user in top_users]}), 200
+
+
+class GetRecentMessagesView(MethodView):
+    @cross_origin()
+    def get(self) -> tuple[Any, int]:
+        recent_messages = user_service.get_recent_messages()
+        return jsonify({"recent_messages": [message.id for message in recent_messages]}), 200
+
+
+class SendNotificationView(MethodView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        user_id: int = data.get('user_id')
+        text: str = data.get('text')
+
+        user_service.send_notification(user_id, text)
+
+        return jsonify({"message": f"Notification has been sent to user with id {user_id}."}), 200
+
+
+class GetMessageCommentsView(MethodView):
+    @cross_origin()
+    def get(self, message_id: str) -> tuple[Any, int]:
+        comments = user_service.get_message_comments(message_id)
+        return jsonify({"comments": [comment.id for comment in comments]}), 200

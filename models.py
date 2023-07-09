@@ -45,3 +45,23 @@ class Comment(db.Document):
     content = StringField()
     created_at = DateTimeField()
     likes = ListField(EmbeddedDocumentField(Like))
+
+class Report(db.Document):
+    """
+    Report db class
+    """
+    user = ReferenceField(User, reverse_delete_rule=CASCADE)
+    message = ReferenceField(Message, reverse_delete_rule=CASCADE)
+    comment = ReferenceField(Comment, reverse_delete_rule=CASCADE)
+    reason = StringField()
+    created_at = DateTimeField()
+
+
+class Notification(db.Document):
+    """
+    Notification db class
+    """
+    user = ReferenceField(User, reverse_delete_rule=CASCADE)
+    text = StringField()
+    read = BooleanField(default=False)
+    created_at = DateTimeField()
