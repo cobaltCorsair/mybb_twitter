@@ -314,7 +314,7 @@ class GetRecentMessagesView(MethodView):
     @cross_origin()
     def get(self) -> tuple[Any, int]:
         recent_messages = user_service.get_recent_messages()
-        return jsonify({"recent_messages": [message.id for message in recent_messages]}), 200
+        return jsonify({"recent_messages": [str(message.id) for message in recent_messages]}), 200
 
 
 class SendNotificationView(MethodView):
@@ -335,4 +335,4 @@ class GetMessageCommentsView(MethodView):
     @cross_origin()
     def get(self, message_id: str) -> tuple[Any, int]:
         comments = user_service.get_message_comments(message_id)
-        return jsonify({"comments": [comment.id for comment in comments]}), 200
+        return jsonify({"comments": [str(comment.id) for comment in comments]}), 200

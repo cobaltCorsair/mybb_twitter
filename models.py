@@ -46,6 +46,7 @@ class Comment(db.Document):
     created_at = DateTimeField()
     likes = ListField(EmbeddedDocumentField(Like))
 
+
 class Report(db.Document):
     """
     Report db class
