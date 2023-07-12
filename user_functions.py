@@ -65,6 +65,21 @@ class UserService:
         message.likes.append(like)
         message.save()
 
+    def get_user_posts(self, user_id: int) -> list:
+        user_posts = Message.objects.filter(user_id=user_id).order_by('-date').limit(10)
+        posts_data = []
+        for post in user_posts:
+            post_data = {
+                "post_id": str(post.id),
+                "post_content": post.content,
+                "post_date": post.date.isoformat(),
+                "comments": [{"comment_id": str(comment.id), "comment_content": comment.content} for comment in
+                             post.comments],
+                "likes": len(post.likes)
+            }
+            posts_data.append(post_data)
+        return posts_data
+
     def get_likes(self, message_id: str) -> int:
         message = Message.objects.get(id=message_id)
         return sum(like.value for like in message.likes)

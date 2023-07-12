@@ -36,6 +36,7 @@ app.add_url_rule('/get_top_users', view_func=GetTopUsersView.as_view('get_top_us
 app.add_url_rule('/get_recent_messages', view_func=GetRecentMessagesView.as_view('get_recent_messages'), methods=['GET'])
 app.add_url_rule('/send_notification', view_func=SendNotificationView.as_view('send_notification'), methods=['POST'])
 app.add_url_rule('/get_message_comments/<string:message_id>', view_func=GetMessageCommentsView.as_view('get_message_comments'), methods=['GET'])
+app.add_url_rule('/get_user_posts/<int:user_id>', view_func=GetUserPostsView.as_view('get_user_posts'))
 
 
 if __name__ == "__main__":

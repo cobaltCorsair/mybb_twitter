@@ -161,7 +161,6 @@ class LikeMessageView(MethodView):
             return jsonify({"message": str(e)}), 400
 
 
-
 class RemoveLikeMessageView(MethodView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
@@ -336,3 +335,10 @@ class GetMessageCommentsView(MethodView):
     def get(self, message_id: str) -> tuple[Any, int]:
         comments = user_service.get_message_comments(message_id)
         return jsonify({"comments": [str(comment.id) for comment in comments]}), 200
+
+
+class GetUserPostsView(MethodView):
+    @cross_origin()
+    def get(self, user_id: int) -> tuple[Any, int]:
+        posts_data = user_service.get_user_posts(user_id)
+        return jsonify({"user_posts": posts_data}), 200
