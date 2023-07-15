@@ -1,363 +1,49 @@
-from typing import Optional, Any
-from flask import request, jsonify
-from flask.views import MethodView
-from flask_cors import cross_origin
-
-from models import User
-from user_functions import UserService
-
-from server_settings import socketio
-
-user_service = UserService()
-#socketio = SocketIO()
-
-class UserView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Create a new user or return an existing one.
-
-        :param self: An instance of UserView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        username: str = data.get('username')
-        avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
-
-        if user_service.user_exists(user_id):
-            user_service.update_username_and_avatar(user_id, username, avatar_url)
-            return jsonify({"message": f"User {username} already exists in the database."}), 200
-        user_service.create_user(user_id, username, avatar_url)
-
-        socketio.emit('new user', data, broadcast=True)
-        return jsonify({"message": f"User {username} has been added to the database."}), 201
-
-
-class CreateMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Create a new message for a user.
-
-        :param self: An instance of MessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        username: str = data.get('username')
-        avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
-        content: str = data.get('content')
-
-        if not user_service.user_exists(user_id):
-            user_service.create_user(user_id, username, avatar_url)
-        else:
-            user_service.update_username_and_avatar(user_id, username, avatar_url)
-
-        user = User.objects.get(forum_id=user_id)
-        if user.banned:
-            return jsonify({"message": f"User {username} is banned and cannot create messages."}), 403
-
-        user_service.create_message(user_id, content)
-
-        socketio.emit('new message', data, broadcast=True)
-        return jsonify({"message": f"Message has been created for user {username}."}), 201
-
-
-class DeleteMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        message_id: str = data.get('message_id')
-        user_id: int = data.get('user_id')
-
-        user_service.delete_message(message_id, user_id)
-
-        socketio.emit('delete message', data, broadcast=True)
-        return jsonify({"message": f"Message with id {message_id} has been deleted."}), 200
-
-
-class UpdateMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        message_id: str = data.get('message_id')
-        user_id: int = data.get('user_id')
-        new_content: str = data.get('new_content')
-
-        user_service.edit_message(message_id, user_id, new_content)
-        socketio.emit('update message', data, broadcast=True)
-        return jsonify({"message": f"Message with id {message_id} has been edited."}), 200
-
-
-class CreateCommentView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Create a new comment for a message.
-
-        :param self: An instance of CommentView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        message_id: str = data.get('message_id')
-        content: str = data.get('content')
-
-        if not user_service.user_exists(user_id):
-            return jsonify({"message": "User does not exist"}), 404
-
-        user_service.create_comment(user_id, message_id, content)
-        socketio.emit('create comment', data, broadcast=True)
-        return jsonify({"message": f"Comment has been created for message {message_id}."}), 201
-
-
-class DeleteCommentView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Delete a comment.
-
-        :param self: An instance of DeleteCommentView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        comment_id: str = data.get('comment_id')
-
-        if not user_service.user_exists(user_id):
-            return jsonify({"message": "User does not exist"}), 404
-
-        user_service.delete_comment(comment_id, user_id)
-
-        socketio.emit('delete comment', data, broadcast=True)
-        return jsonify({"message": f"Comment {comment_id} has been deleted."}), 200
-
-
-class LikeMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Like a message.
-
-        :param self: An instance of LikeMessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        message_id: str = data.get('message_id')
-
-        try:
-            user_service.like(user_id, message_id, 1)
-            socketio.emit('like message', data, broadcast=True)
-            return jsonify({"message": f"Message with id {message_id} has been liked."}), 200
-        except ValueError as e:
-            return jsonify({"message": str(e)}), 400
-
-
-class RemoveLikeMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        """
-        Remove like from a message.
-
-        :param self: An instance of RemoveLikeMessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        message_id: str = data.get('message_id')
-
-        try:
-            user_service.remove_like(user_id, message_id)
-            socketio.emit('remove like message', data, broadcast=True)
-            return jsonify({"message": f"Like has been removed from message with id {message_id}."}), 200
-        except ValueError:
-            return jsonify({"message": "User has not liked this message"}), 400
-
-
-class GetMessageLikesView(MethodView):
-    @cross_origin()
-    def get(self, message_id: str) -> tuple[Any, int]:
-        """
-        Get the number of likes for a message.
-
-        :param self: An instance of GetMessageLikesView.
-        :param message_id: The ID of the message.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        likes = user_service.get_likes(message_id)
-        return jsonify({"likes": likes}), 200
-
-
-class BanUserView(MethodView):
-    @cross_origin()
-    def post(self, user_id: int) -> tuple[Any, int]:
-        """
-        Ban a user.
-
-        :param self: An instance of BanUserView.
-        :param user_id: The ID of the user to be banned.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        user_service.ban_user(user_id)
-        socketio.emit('ban user', {'user_id': user_id}, broadcast=True)
-        return jsonify({"message": f"User with id {user_id} has been banned."}), 200
-
-
-class UnbanUserView(MethodView):
-    @cross_origin()
-    def post(self, user_id: int) -> tuple[Any, int]:
-        """
-        Unban a user.
-
-        :param self: An instance of UnbanUserView.
-        :param user_id: The ID of the user to be unbanned.
-        :return: A tuple containing a message and an HTTP status code.
-        """
-        user_service.unban_user(user_id)
-        socketio.emit('unban user', {'user_id': user_id}, broadcast=True)
-        return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
-
-
-class IgnoreUserView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        ignored_user_id: int = data.get('ignored_user_id')
-
-        try:
-            user_service.ignore_user(user_id, ignored_user_id)
-        except ValueError as e:
-            return jsonify({"message": str(e)}), 400
-
-        socketio.emit('ignore user', data, broadcast=True)
-        return jsonify(
-            {"message": f"User with id {ignored_user_id} has been added to ignore list of user {user_id}."}), 200
-
-
-class UnignoreUserView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        ignored_user_id: int = data.get('ignored_user_id')
-
-        try:
-            user_service.unignore_user(user_id, ignored_user_id)
-        except ValueError as e:
-            return jsonify({"message": str(e)}), 400
-
-        socketio.emit('unignore user', data, broadcast=True)
-        return jsonify(
-            {"message": f"User with id {ignored_user_id} has been removed from ignore list of user {user_id}."}), 200
-
-
-class GetIgnoredUsersView(MethodView):
-    @cross_origin()
-    def get(self, user_id: int) -> tuple[Any, int]:
-        try:
-            ignored_users = user_service.get_ignored_users(user_id)
-        except ValueError as e:
-            return jsonify({"message": str(e)}), 400
-
-        return jsonify({"ignored_users": ignored_users}), 200
-
-
-class ReportMessageView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        message_id: str = data.get('message_id')
-        reason: str = data.get('reason')
-
-        user_service.report_message(user_id, message_id, reason)
-
-        socketio.emit('report message', data, broadcast=True)
-        return jsonify({"message": f"Message with id {message_id} has been reported."}), 200
-
-
-class ReportCommentView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        comment_id: str = data.get('comment_id')
-        reason: str = data.get('reason')
-
-        user_service.report_comment(user_id, comment_id, reason)
-
-        socketio.emit('report comment', data, broadcast=True)
-        return jsonify({"message": f"Comment with id {comment_id} has been reported."}), 200
-
-
-class GetTopUsersView(MethodView):
-    @cross_origin()
-    def get(self) -> tuple[Any, int]:
-        top_users = user_service.get_top_users()
-        return jsonify({"top_users": [user.forum_id for user in top_users]}), 200
-
-
-class GetRecentMessagesView(MethodView):
-    @cross_origin()
-    def get(self) -> tuple[Any, int]:
-        recent_messages = user_service.get_recent_messages()
-        return jsonify({"recent_messages": [str(message.id) for message in recent_messages]}), 200
-
-
-class SendNotificationView(MethodView):
-    @cross_origin()
-    def post(self) -> tuple[Any, int]:
-        data: Optional[dict] = request.get_json()
-        if data is None:
-            return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
-        text: str = data.get('text')
-
-        user_service.send_notification(user_id, text)
-
-        socketio.emit('send notification', data, broadcast=True)
-        return jsonify({"message": f"Notification has been sent to user with id {user_id}."}), 200
-
-
-class GetMessageCommentsView(MethodView):
-    @cross_origin()
-    def get(self, message_id: str) -> tuple[Any, int]:
-        comments = user_service.get_message_comments(message_id)
-        socketio.emit('get message comments',
-                      {"message_id": message_id, "comments": [str(comment.id) for comment in comments]}, broadcast=True)
-        return jsonify({"comments": [str(comment.id) for comment in comments]}), 200
-
-
-class GetUserPostsView(MethodView):
-    @cross_origin()
-    def get(self, user_id: int) -> tuple[Any, int]:
-        posts_data = user_service.get_user_posts(user_id)
-        socketio.emit('get user posts', {"user_id": user_id, "posts_data": posts_data}, broadcast=True)
-        return jsonify({"user_posts": posts_data}), 200
+from flask import Flask
+from flask_mongoengine import MongoEngine
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+from views import UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView, \
+    DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView, UnbanUserView, \
+    IgnoreUserView, UnignoreUserView, GetIgnoredUsersView, ReportMessageView, ReportCommentView, GetTopUsersView, \
+    GetRecentMessagesView, SendNotificationView, GetMessageCommentsView, GetUserPostsView
+
+app = Flask(__name__)
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'mybb_twitter',
+    'host': 'localhost',
+    'port': 27017
+}
+cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-Type"],
+                                    "methods": ["GET", "POST"]}})
+db = MongoEngine(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+import views
+views.socketio = socketio
+
+app.add_url_rule('/check_user', view_func=UserView.as_view('check_user', socketio=socketio), methods=['POST'])
+app.add_url_rule('/create_message', view_func=CreateMessageView.as_view('create_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/delete_message', view_func=DeleteMessageView.as_view('delete_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/update_message', view_func=UpdateMessageView.as_view('update_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/ban_user/<int:user_id>', view_func=BanUserView.as_view('ban_user', socketio=socketio), methods=['POST'])
+app.add_url_rule('/unban_user/<int:user_id>', view_func=UnbanUserView.as_view('unban_user', socketio=socketio), methods=['POST'])
+app.add_url_rule('/create_comment', view_func=CreateCommentView.as_view('create_comment', socketio=socketio), methods=['POST'])
+app.add_url_rule('/delete_comment', view_func=DeleteCommentView.as_view('delete_comment', socketio=socketio), methods=['POST'])
+app.add_url_rule('/like_message', view_func=LikeMessageView.as_view('like_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/remove_like_message',
+                 view_func=RemoveLikeMessageView.as_view('remove_like_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/get_message_likes/<string:message_id>',
+                 view_func=GetMessageLikesView.as_view('get_message_likes'), methods=['GET'])
+app.add_url_rule('/ignore_user', view_func=IgnoreUserView.as_view('ignore_user', socketio=socketio), methods=['POST'])
+app.add_url_rule('/unignore_user', view_func=UnignoreUserView.as_view('unignore_user', socketio=socketio), methods=['POST'])
+app.add_url_rule('/get_ignored_users/<int:user_id>', view_func=GetIgnoredUsersView.as_view('get_ignored_users'), methods=['GET'])
+app.add_url_rule('/report_message', view_func=ReportMessageView.as_view('report_message', socketio=socketio), methods=['POST'])
+app.add_url_rule('/report_comment', view_func=ReportCommentView.as_view('report_comment', socketio=socketio), methods=['POST'])
+app.add_url_rule('/get_top_users', view_func=GetTopUsersView.as_view('get_top_users'), methods=['GET'])
+app.add_url_rule('/get_recent_messages', view_func=GetRecentMessagesView.as_view('get_recent_messages'), methods=['GET'])
+app.add_url_rule('/send_notification', view_func=SendNotificationView.as_view('send_notification', socketio=socketio), methods=['POST'])
+app.add_url_rule('/get_message_comments/<string:message_id>', view_func=GetMessageCommentsView.as_view('get_message_comments'), methods=['GET'])
+app.add_url_rule('/get_user_posts/<int:user_id>', view_func=GetUserPostsView.as_view('get_user_posts'), methods=['GET'])
+
+if __name__ == "__main__":
+    socketio.run(app, allow_unsafe_werkzeug=True)
