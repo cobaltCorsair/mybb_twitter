@@ -7,16 +7,45 @@
     <script>
         var socket = io.connect('http://localhost:5000');
 
-        socket.on('new message', function (data) {
-            var messages = document.getElementById('messages');
-            var message = document.createElement('li');
-            message.textContent = data.content;
-            messages.appendChild(message);
+        socket.on('connect', function() {
+            console.log('Connected to server');
         });
+
+        socket.on('new message', function (data) {
+            console.log('New message received:', data);
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+        });
+
+        function createMessage() {
+            var messageData = {
+                user_id: 123,
+                username: 'testuser',
+                avatar_url: 'test',
+                content: 'This is a test message.'
+            };
+
+            fetch('http://localhost:5000/create_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message created:', data);
+            })
+            .catch(error => {
+                console.error('Error creating message:', error);
+            });
+        }
     </script>
 </head>
 <body>
 <h1>Socket.IO Test</h1>
-<ul id="messages"></ul>
+<button onclick="createMessage()">Create Message</button>
 </body>
 </html>

@@ -46,4 +46,4 @@ app.add_url_rule('/get_message_comments/<string:message_id>', view_func=GetMessa
 app.add_url_rule('/get_user_posts/<int:user_id>', view_func=GetUserPostsView.as_view('get_user_posts'), methods=['GET'])
 
 if __name__ == "__main__":
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True)
