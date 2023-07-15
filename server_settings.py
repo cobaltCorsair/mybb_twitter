@@ -2,7 +2,14 @@ from flask import Flask
 from flask_mongoengine import MongoEngine
 from flask_cors import CORS
 
-from server import *
+from flask_socketio import SocketIO, emit
+
+__all__ = ['socketio', 'app', 'db', 'cors']
+
+from server import UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, BanUserView, UnbanUserView, \
+    CreateCommentView, DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, IgnoreUserView, \
+    GetIgnoredUsersView, UnignoreUserView, ReportMessageView, ReportCommentView, GetTopUsersView, GetRecentMessagesView, \
+    SendNotificationView, GetMessageCommentsView, GetUserPostsView
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
@@ -13,6 +20,12 @@ app.config['MONGODB_SETTINGS'] = {
 cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-Type"],
                                     "methods": ["GET", "POST"]}})
 db = MongoEngine(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Обработчик событий SocketIO
+@socketio.on('new message')
+def handle_new_message(data):
+    emit('new message', data, broadcast=True)
 
 app.add_url_rule('/check_user', view_func=UserView.as_view('check_user'), methods=['POST'])
 app.add_url_rule('/create_message', view_func=CreateMessageView.as_view('create_message'), methods=['POST'])
@@ -40,4 +53,4 @@ app.add_url_rule('/get_user_posts/<int:user_id>', view_func=GetUserPostsView.as_
 
 
 if __name__ == "__main__":
-    app.run()
+    socketio.run(app, allow_unsafe_werkzeug=True)

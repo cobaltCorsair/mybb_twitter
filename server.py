@@ -6,8 +6,10 @@ from flask_cors import cross_origin
 from models import User
 from user_functions import UserService
 
-user_service = UserService()
+from server_settings import socketio
 
+user_service = UserService()
+#socketio = SocketIO()
 
 class UserView(MethodView):
     @cross_origin()
@@ -29,6 +31,8 @@ class UserView(MethodView):
             user_service.update_username_and_avatar(user_id, username, avatar_url)
             return jsonify({"message": f"User {username} already exists in the database."}), 200
         user_service.create_user(user_id, username, avatar_url)
+
+        socketio.emit('new user', data, broadcast=True)
         return jsonify({"message": f"User {username} has been added to the database."}), 201
 
 
@@ -60,6 +64,7 @@ class CreateMessageView(MethodView):
 
         user_service.create_message(user_id, content)
 
+        socketio.emit('new message', data, broadcast=True)
         return jsonify({"message": f"Message has been created for user {username}."}), 201
 
 
@@ -74,6 +79,7 @@ class DeleteMessageView(MethodView):
 
         user_service.delete_message(message_id, user_id)
 
+        socketio.emit('delete message', data, broadcast=True)
         return jsonify({"message": f"Message with id {message_id} has been deleted."}), 200
 
 
@@ -88,7 +94,7 @@ class UpdateMessageView(MethodView):
         new_content: str = data.get('new_content')
 
         user_service.edit_message(message_id, user_id, new_content)
-
+        socketio.emit('update message', data, broadcast=True)
         return jsonify({"message": f"Message with id {message_id} has been edited."}), 200
 
 
@@ -112,7 +118,7 @@ class CreateCommentView(MethodView):
             return jsonify({"message": "User does not exist"}), 404
 
         user_service.create_comment(user_id, message_id, content)
-
+        socketio.emit('create comment', data, broadcast=True)
         return jsonify({"message": f"Comment has been created for message {message_id}."}), 201
 
 
@@ -136,6 +142,7 @@ class DeleteCommentView(MethodView):
 
         user_service.delete_comment(comment_id, user_id)
 
+        socketio.emit('delete comment', data, broadcast=True)
         return jsonify({"message": f"Comment {comment_id} has been deleted."}), 200
 
 
@@ -156,6 +163,7 @@ class LikeMessageView(MethodView):
 
         try:
             user_service.like(user_id, message_id, 1)
+            socketio.emit('like message', data, broadcast=True)
             return jsonify({"message": f"Message with id {message_id} has been liked."}), 200
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
@@ -178,6 +186,7 @@ class RemoveLikeMessageView(MethodView):
 
         try:
             user_service.remove_like(user_id, message_id)
+            socketio.emit('remove like message', data, broadcast=True)
             return jsonify({"message": f"Like has been removed from message with id {message_id}."}), 200
         except ValueError:
             return jsonify({"message": "User has not liked this message"}), 400
@@ -208,6 +217,7 @@ class BanUserView(MethodView):
         :return: A tuple containing a message and an HTTP status code.
         """
         user_service.ban_user(user_id)
+        socketio.emit('ban user', {'user_id': user_id}, broadcast=True)
         return jsonify({"message": f"User with id {user_id} has been banned."}), 200
 
 
@@ -222,6 +232,7 @@ class UnbanUserView(MethodView):
         :return: A tuple containing a message and an HTTP status code.
         """
         user_service.unban_user(user_id)
+        socketio.emit('unban user', {'user_id': user_id}, broadcast=True)
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
 
 
@@ -239,6 +250,7 @@ class IgnoreUserView(MethodView):
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
 
+        socketio.emit('ignore user', data, broadcast=True)
         return jsonify(
             {"message": f"User with id {ignored_user_id} has been added to ignore list of user {user_id}."}), 200
 
@@ -257,6 +269,7 @@ class UnignoreUserView(MethodView):
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
 
+        socketio.emit('unignore user', data, broadcast=True)
         return jsonify(
             {"message": f"User with id {ignored_user_id} has been removed from ignore list of user {user_id}."}), 200
 
@@ -284,6 +297,7 @@ class ReportMessageView(MethodView):
 
         user_service.report_message(user_id, message_id, reason)
 
+        socketio.emit('report message', data, broadcast=True)
         return jsonify({"message": f"Message with id {message_id} has been reported."}), 200
 
 
@@ -299,6 +313,7 @@ class ReportCommentView(MethodView):
 
         user_service.report_comment(user_id, comment_id, reason)
 
+        socketio.emit('report comment', data, broadcast=True)
         return jsonify({"message": f"Comment with id {comment_id} has been reported."}), 200
 
 
@@ -327,6 +342,7 @@ class SendNotificationView(MethodView):
 
         user_service.send_notification(user_id, text)
 
+        socketio.emit('send notification', data, broadcast=True)
         return jsonify({"message": f"Notification has been sent to user with id {user_id}."}), 200
 
 
@@ -334,6 +350,8 @@ class GetMessageCommentsView(MethodView):
     @cross_origin()
     def get(self, message_id: str) -> tuple[Any, int]:
         comments = user_service.get_message_comments(message_id)
+        socketio.emit('get message comments',
+                      {"message_id": message_id, "comments": [str(comment.id) for comment in comments]}, broadcast=True)
         return jsonify({"comments": [str(comment.id) for comment in comments]}), 200
 
 
@@ -341,4 +359,5 @@ class GetUserPostsView(MethodView):
     @cross_origin()
     def get(self, user_id: int) -> tuple[Any, int]:
         posts_data = user_service.get_user_posts(user_id)
+        socketio.emit('get user posts', {"user_id": user_id, "posts_data": posts_data}, broadcast=True)
         return jsonify({"user_posts": posts_data}), 200

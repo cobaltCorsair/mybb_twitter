@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        var socket = io.connect('http://localhost:5000');
+
+        socket.on('new message', function (data) {
+            var messages = document.getElementById('messages');
+            var message = document.createElement('li');
+            message.textContent = data.content;
+            messages.appendChild(message);
+        });
+    </script>
+</head>
+<body>
+<h1>Socket.IO Test</h1>
+<ul id="messages"></ul>
+</body>
+</html>
