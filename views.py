@@ -2,11 +2,11 @@ from typing import Any, Optional
 from flask import request, jsonify
 from flask.views import MethodView
 from flask_cors import cross_origin
+from socketio_singleton import socketio
 from models import User
 from user_functions import UserService
 
 user_service = UserService()
-socketio = None
 
 
 class BaseView(MethodView):
@@ -17,15 +17,16 @@ class BaseView(MethodView):
 class UserView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Create a new user or return an existing one.
-
-        :param self: An instance of UserView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_user(data)
+
+    @socketio.on('new user')
+    def handle_new_user(self, data):
+        self.handle_user(data)
+
+    def handle_user(self, data):
         user_id: int = data.get('user_id')
         username: str = data.get('username')
         avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
@@ -42,18 +43,19 @@ class UserView(BaseView):
 class CreateMessageView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Create a new message for a user.
-
-        :param self: An instance of MessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_create_message(data)
+
+    @socketio.on('create message')
+    def handle_create_message_socket(self, data):
+        return self.handle_create_message(data)
+
+    def handle_create_message(self, data):
         user_id: int = data.get('user_id')
         username: str = data.get('username')
-        avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
+        avatar_url: str = data.get('avatar_url')
         content: str = data.get('content')
 
         if not user_service.user_exists(user_id):
@@ -67,7 +69,7 @@ class CreateMessageView(BaseView):
 
         user_service.create_message(user_id, content)
 
-        self.socketio.emit('new message', data, room='room')
+        self.socketio.emit('create message', data, room='room')
         return jsonify({"message": f"Message has been created for user {username}."}), 201
 
 
@@ -77,6 +79,13 @@ class DeleteMessageView(BaseView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_delete_message(data)
+
+    @socketio.on('delete message')
+    def handle_delete_message_socket(self, data: dict):
+        return self.handle_delete_message(data)
+
+    def handle_delete_message(self, data):
         message_id: str = data.get('message_id')
         user_id: int = data.get('user_id')
 
@@ -92,6 +101,13 @@ class UpdateMessageView(BaseView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_update_message(data)
+
+    @socketio.on('update message')
+    def handle_update_message_socket(self, data: dict):
+        return self.handle_update_message(data)
+
+    def handle_update_message(self, data):
         message_id: str = data.get('message_id')
         user_id: int = data.get('user_id')
         new_content: str = data.get('new_content')
@@ -104,15 +120,16 @@ class UpdateMessageView(BaseView):
 class CreateCommentView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Create a new comment for a message.
-
-        :param self: An instance of CommentView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_create_comment(data)
+
+    @socketio.on('create comment')
+    def handle_create_comment_socket(self, data: dict):
+        return self.handle_create_comment(data)
+
+    def handle_create_comment(self, data):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
         content: str = data.get('content')
@@ -128,23 +145,23 @@ class CreateCommentView(BaseView):
 class DeleteCommentView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Delete a comment.
-
-        :param self: An instance of DeleteCommentView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
-        user_id: int = data.get('user_id')
+        return self.handle_delete_comment(data)
+
+    @socketio.on('delete comment')
+    def handle_delete_comment_socket(self, data):
+        return self.handle_delete_comment(data)
+
+    def handle_delete_comment(self, data):
         comment_id: str = data.get('comment_id')
+        user_id: int = data.get('user_id')
 
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
 
         user_service.delete_comment(comment_id, user_id)
-
         self.socketio.emit('delete comment', data, room='room')
         return jsonify({"message": f"Comment {comment_id} has been deleted."}), 200
 
@@ -152,18 +169,18 @@ class DeleteCommentView(BaseView):
 class LikeMessageView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Like a message.
-
-        :param self: An instance of LikeMessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_like_message(data)
+
+    @socketio.on('like message')
+    def handle_like_message_socket(self, data):
+        return self.handle_like_message(data)
+
+    def handle_like_message(self, data):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
-
         try:
             user_service.like(user_id, message_id, 1)
             self.socketio.emit('like message', data, room='room')
@@ -175,18 +192,18 @@ class LikeMessageView(BaseView):
 class RemoveLikeMessageView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
-        """
-        Remove like from a message.
-
-        :param self: An instance of RemoveLikeMessageView.
-        :return: A tuple containing a message and an HTTP status code.
-        """
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
+        return self.handle_remove_like(data)
+
+    @socketio.on('remove like message')
+    def handle_remove_like_socket(self, data):
+        return self.handle_remove_like(data)
+
+    def handle_remove_like(self, data):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
-
         try:
             user_service.remove_like(user_id, message_id)
             self.socketio.emit('remove like message', data, room='room')
@@ -198,13 +215,13 @@ class RemoveLikeMessageView(BaseView):
 class GetMessageLikesView(BaseView):
     @cross_origin()
     def get(self, message_id: str) -> tuple[Any, int]:
-        """
-        Get the number of likes for a message.
+        return self.handle_get_likes(message_id)
 
-        :param self: An instance of GetMessageLikesView.
-        :param message_id: The ID of the message.
-        :return: A tuple containing a message and an HTTP status code.
-        """
+    @socketio.on('get message likes')
+    def handle_get_likes_socket(self, message_id):
+        return self.handle_get_likes(message_id)
+
+    def handle_get_likes(self, message_id):
         likes = user_service.get_likes(message_id)
         return jsonify({"likes": likes}), 200
 
@@ -212,13 +229,13 @@ class GetMessageLikesView(BaseView):
 class BanUserView(BaseView):
     @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
-        """
-        Ban a user.
+        return self.handle_ban_user(user_id)
 
-        :param self: An instance of BanUserView.
-        :param user_id: The ID of the user to be banned.
-        :return: A tuple containing a message and an HTTP status code.
-        """
+    @socketio.on('ban user')
+    def handle_ban_user_socket(self, user_id):
+        return self.handle_ban_user(user_id)
+
+    def handle_ban_user(self, user_id):
         user_service.ban_user(user_id)
         self.socketio.emit('ban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been banned."}), 200
@@ -227,13 +244,13 @@ class BanUserView(BaseView):
 class UnbanUserView(BaseView):
     @cross_origin()
     def post(self, user_id: int) -> tuple[Any, int]:
-        """
-        Unban a user.
+        return self.handle_unban_user(user_id)
 
-        :param self: An instance of UnbanUserView.
-        :param user_id: The ID of the user to be unbanned.
-        :return: A tuple containing a message and an HTTP status code.
-        """
+    @socketio.on('unban user')
+    def handle_unban_user_socket(self, user_id):
+        return self.handle_unban_user(user_id)
+
+    def handle_unban_user(self, user_id):
         user_service.unban_user(user_id)
         self.socketio.emit('unban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
@@ -243,6 +260,13 @@ class IgnoreUserView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
+        return self.handle_ignore_user(data)
+
+    @socketio.on('ignore user')
+    def handle_ignore_user_socket(self, data):
+        return self.handle_ignore_user(data)
+
+    def handle_ignore_user(self, data):
         if data is None:
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
@@ -262,6 +286,13 @@ class UnignoreUserView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
+        return self.handle_unignore_user(data)
+
+    @socketio.on('unignore user')
+    def handle_unignore_user_socket(self, data):
+        return self.handle_unignore_user(data)
+
+    def handle_unignore_user(self, data):
         if data is None:
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
@@ -280,6 +311,13 @@ class UnignoreUserView(BaseView):
 class GetIgnoredUsersView(BaseView):
     @cross_origin()
     def get(self, user_id: int) -> tuple[Any, int]:
+        return self.handle_get_ignored_users(user_id)
+
+    @socketio.on('get ignored users')
+    def handle_get_ignored_users_socket(self, user_id):
+        return self.handle_get_ignored_users(user_id)
+
+    def handle_get_ignored_users(self, user_id):
         try:
             ignored_users = user_service.get_ignored_users(user_id)
         except ValueError as e:
@@ -292,6 +330,13 @@ class ReportMessageView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
+        return self.handle_report_message(data)
+
+    @socketio.on('report message')
+    def handle_report_message_socket(self, data):
+        return self.handle_report_message(data)
+
+    def handle_report_message(self, data):
         if data is None:
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
@@ -308,6 +353,13 @@ class ReportCommentView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
+        return self.handle_report_comment(data)
+
+    @socketio.on('report comment')
+    def handle_report_comment_socket(self, data):
+        return self.handle_report_comment(data)
+
+    def handle_report_comment(self, data):
         if data is None:
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
@@ -323,6 +375,13 @@ class ReportCommentView(BaseView):
 class GetTopUsersView(BaseView):
     @cross_origin()
     def get(self) -> tuple[Any, int]:
+        return self.handle_get_top_users()
+
+    @socketio.on('get top users')
+    def handle_get_top_users_socket(self):
+        return self.handle_get_top_users()
+
+    def handle_get_top_users(self):
         top_users = user_service.get_top_users()
         return jsonify({"top_users": [user.forum_id for user in top_users]}), 200
 
@@ -330,6 +389,13 @@ class GetTopUsersView(BaseView):
 class GetRecentMessagesView(BaseView):
     @cross_origin()
     def get(self) -> tuple[Any, int]:
+        return self.handle_get_recent_messages()
+
+    @socketio.on('get recent messages')
+    def handle_get_recent_messages_socket(self):
+        return self.handle_get_recent_messages()
+
+    def handle_get_recent_messages(self):
         recent_messages = user_service.get_recent_messages()
         return jsonify({"recent_messages": [str(message.id) for message in recent_messages]}), 200
 
@@ -338,6 +404,13 @@ class SendNotificationView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
+        return self.handle_send_notification(data)
+
+    @socketio.on('send notification')
+    def handle_send_notification_socket(self, data):
+        return self.handle_send_notification(data)
+
+    def handle_send_notification(self, data):
         if data is None:
             return jsonify({"message": "No data provided"}), 400
         user_id: int = data.get('user_id')
@@ -352,6 +425,13 @@ class SendNotificationView(BaseView):
 class GetMessageCommentsView(BaseView):
     @cross_origin()
     def get(self, message_id: str) -> tuple[Any, int]:
+        return self.handle_get_message_comments(message_id)
+
+    @socketio.on('get message comments')
+    def handle_get_message_comments_socket(self, data):
+        return self.handle_get_message_comments(data.get('message_id'))
+
+    def handle_get_message_comments(self, message_id):
         comments = user_service.get_message_comments(message_id)
         self.socketio.emit('get message comments',
                       {"message_id": message_id, "comments": [str(comment.id) for comment in comments]}, room='room')
@@ -361,6 +441,13 @@ class GetMessageCommentsView(BaseView):
 class GetUserPostsView(BaseView):
     @cross_origin()
     def get(self, user_id: int) -> tuple[Any, int]:
+        return self.handle_get_user_posts(user_id)
+
+    @socketio.on('get user posts')
+    def handle_get_user_posts_socket(self, data):
+        return self.handle_get_user_posts(data.get('user_id'))
+
+    def handle_get_user_posts(self, user_id):
         posts_data = user_service.get_user_posts(user_id)
         self.socketio.emit('get user posts', {"user_id": user_id, "posts_data": posts_data}, room='room')
         return jsonify({"user_posts": posts_data}), 200
