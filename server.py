@@ -18,51 +18,45 @@ cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-T
 db = MongoEngine(app)
 socketio.init_app(app)
 
-# Create instances of all classes
-user_view = UserView(socketio)
-create_message_view = CreateMessageView(socketio)
-delete_message_view = DeleteMessageView(socketio)
-update_message_view = UpdateMessageView(socketio)
-create_comment_view = CreateCommentView(socketio)
-delete_comment_view = DeleteCommentView(socketio)
-like_message_view = LikeMessageView(socketio)
-remove_like_message_view = RemoveLikeMessageView(socketio)
-get_message_likes_view = GetMessageLikesView(socketio)
-ban_user_view = BanUserView(socketio)
-unban_user_view = UnbanUserView(socketio)
-ignore_user_view = IgnoreUserView(socketio)
-unignore_user_view = UnignoreUserView(socketio)
-get_ignored_users_view = GetIgnoredUsersView(socketio)
-report_message_view = ReportMessageView(socketio)
-report_comment_view = ReportCommentView(socketio)
-get_top_users_view = GetTopUsersView(socketio)
-get_recent_messages_view = GetRecentMessagesView(socketio)
-send_notification_view = SendNotificationView(socketio)
-get_message_comments_view = GetMessageCommentsView(socketio)
-get_user_posts_view = GetUserPostsView(socketio)
+view_classes = [
+    UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView,
+    DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView,
+    UnbanUserView, IgnoreUserView, UnignoreUserView, GetIgnoredUsersView, ReportMessageView,
+    ReportCommentView, GetTopUsersView, GetRecentMessagesView, SendNotificationView,
+    GetMessageCommentsView, GetUserPostsView
+]
 
-# Register the methods of the instances as event handlers
-socketio.on('new user')(user_view.handle_new_user)
-socketio.on('create message')(create_message_view.handle_create_message_socket)
-socketio.on('delete message')(delete_message_view.handle_delete_message_socket)
-socketio.on('update message')(update_message_view.handle_update_message_socket)
-socketio.on('create comment')(create_comment_view.handle_create_comment_socket)
-socketio.on('delete comment')(delete_comment_view.handle_delete_comment_socket)
-socketio.on('like message')(like_message_view.handle_like_message_socket)
-socketio.on('remove like message')(remove_like_message_view.handle_remove_like_socket)
-socketio.on('get message likes')(get_message_likes_view.handle_get_likes_socket)
-socketio.on('ban user')(ban_user_view.handle_ban_user_socket)
-socketio.on('unban user')(unban_user_view.handle_unban_user_socket)
-socketio.on('ignore user')(ignore_user_view.handle_ignore_user_socket)
-socketio.on('unignore user')(unignore_user_view.handle_unignore_user_socket)
-socketio.on('get ignored users')(get_ignored_users_view.handle_get_ignored_users_socket)
-socketio.on('report message')(report_message_view.handle_report_message_socket)
-socketio.on('report comment')(report_comment_view.handle_report_comment_socket)
-socketio.on('get top users')(get_top_users_view.handle_get_top_users_socket)
-socketio.on('get recent messages')(get_recent_messages_view.handle_get_recent_messages_socket)
-socketio.on('send notification')(send_notification_view.handle_send_notification_socket)
-socketio.on('get message comments')(get_message_comments_view.handle_get_message_comments_socket)
-socketio.on('get user posts')(get_user_posts_view.handle_get_user_posts_socket)
+event_handlers = {
+    'new user': 'handle_new_user',
+    'create message': 'handle_create_message_socket',
+    'delete message': 'handle_delete_message_socket',
+    'update message': 'handle_update_message_socket',
+    'create comment': 'handle_create_comment_socket',
+    'delete comment': 'handle_delete_comment_socket',
+    'like message': 'handle_like_message_socket',
+    'remove like message': 'handle_remove_like_socket',
+    'get message likes': 'handle_get_likes_socket',
+    'ban user': 'handle_ban_user_socket',
+    'unban user': 'handle_unban_user_socket',
+    'ignore user': 'handle_ignore_user_socket',
+    'unignore user': 'handle_unignore_user_socket',
+    'get ignored users': 'handle_get_ignored_users_socket',
+    'report message': 'handle_report_message_socket',
+    'report comment': 'handle_report_comment_socket',
+    'get top users': 'handle_get_top_users_socket',
+    'get recent messages': 'handle_get_recent_messages_socket',
+    'send notification': 'handle_send_notification_socket',
+    'get message comments': 'handle_get_message_comments_socket',
+    'get user posts': 'handle_get_user_posts_socket',
+}
+
+view_instances = {view_class: view_class(socketio) for view_class in view_classes}
+
+for event_name, handler_name in event_handlers.items():
+    for view_instance in view_instances.values():
+        if hasattr(view_instance, handler_name):
+            socketio.on(event_name)(getattr(view_instance, handler_name))
+            break
 
 url_rules = [
     ("/check_user", UserView.as_view('check_user', socketio=socketio), ['POST']),
