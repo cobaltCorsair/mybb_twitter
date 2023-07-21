@@ -1,50 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<title>Socket.IO Test</title>
-		<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-		<script>
-			var socket = io.connect('http://localhost:5000');
-			
-			socket.on('connect', function() {
-				console.log('Connected to server');
-			});
-			
-			socket.on('create message', function(data) {
-				console.log('New message received:', data);
-				// Добавьте код для отображения нового сообщения в ленте
-				// Например, можно создать новый элемент DOM и добавить его к списку сообщений
-			});
-			
-			socket.on('disconnect', function() {
-				console.log('Disconnected from server');
-			});
-			
-			socket.on('connect_error', function(error) {
-				console.log('Connect error:', error);
-			});
-			
-			socket.on('connect_timeout', function(timeout) {
-				console.log('Connect timeout:', timeout);
-			});
-			
-			function createMessage() {
-				var messageData = {
-					user_id: 123,
-					username: 'testuser',
-					avatar_url: 'test',
-					content: 'This is a test message.'
-				};
-				
-				socket.emit('create message', messageData); // Отправить сообщение через сокет
-				
-				// Код для HTTP-запроса на сервер больше не требуется
-			}
-		</script>
-	</head>
-	<body>
-		<h1>Socket.IO Test</h1>
-		<button onclick="createMessage()">Create Message</button>
-	</body>
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        var socket = io.connect('http://localhost:5000');
+
+socket.on('connect', function() {
+    console.log('Connected to server');
+    socket.emit('join', {room: 'room'});  // Join the 'room' room
+});
+
+
+        socket.on('create message', function (data) {
+            console.log('New message received:', data);
+            var messageList = document.getElementById('messageList');
+            var newMessage = document.createElement('li');
+            newMessage.textContent = data.username + ': ' + data.content;
+            messageList.appendChild(newMessage);
+            console.log('Message added to list:', newMessage.textContent);  // New log statement
+        });
+
+        socket.on('disconnect', function () {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('connect_error', function (error) {
+            console.log('Connect error:', error);
+        });
+
+        socket.on('connect_timeout', function (timeout) {
+            console.log('Connect timeout:', timeout);
+        });
+
+        function createMessage() {
+            var messageData = {
+                user_id: 123,
+                username: 'testuser',
+                avatar_url: 'test',
+                content: 'This is a test message.'
+            };
+
+            console.log('Sending message:', messageData);  // New log statement
+            socket.emit('create message', messageData);
+        }
+    </script>
+</head>
+<body>
+<h1>Socket.IO Test</h1>
+<button onclick="createMessage()">Create Message</button>
+<ul id="messageList"></ul>
+</body>
 </html>

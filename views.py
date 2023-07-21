@@ -5,6 +5,7 @@ from flask_cors import cross_origin
 from socketio_singleton import socketio
 from models import User
 from user_functions import UserService
+from flask_socketio import join_room
 
 user_service = UserService()
 
@@ -26,7 +27,17 @@ class UserView(BaseView):
     def handle_new_user(self, data):
         self.handle_user(data)
 
+    @socketio.on('join')
+    def on_join(self, data):
+        room = data['room']
+        join_room(room)
+        print('Client joined room:', room)
+
     def handle_user(self, data):
+        try:
+            user_service.check_required_fields(data, ['user_id', 'username', 'avatar_url'])
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
         user_id: int = data.get('user_id')
         username: str = data.get('username')
         avatar_url: str = data.get('avatar_url')  # Get avatar URL from request data
@@ -50,6 +61,12 @@ class CreateMessageView(BaseView):
 
     @socketio.on('create message')
     def handle_create_message_socket(self, data):
+        content: str = data.get('content')
+        try:
+            user_service.check_message_length(content, 500)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+        print('Received message:', data)  # New print statement
         return self.handle_create_message(data)
 
     def handle_create_message(self, data):
@@ -69,6 +86,7 @@ class CreateMessageView(BaseView):
 
         user_service.create_message(user_id, content)
 
+        print('Emitting message:', data)  # New print statement
         self.socketio.emit('create message', data, room='room')
         return jsonify({"message": f"Message has been created for user {username}."}), 201
 
@@ -127,6 +145,11 @@ class CreateCommentView(BaseView):
 
     @socketio.on('create comment')
     def handle_create_comment_socket(self, data: dict):
+        content: str = data.get('content')
+        try:
+            user_service.check_message_length(content, 500)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
         return self.handle_create_comment(data)
 
     def handle_create_comment(self, data):
@@ -236,6 +259,8 @@ class BanUserView(BaseView):
         return self.handle_ban_user(user_id)
 
     def handle_ban_user(self, user_id):
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
         user_service.ban_user(user_id)
         self.socketio.emit('ban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been banned."}), 200
@@ -251,6 +276,8 @@ class UnbanUserView(BaseView):
         return self.handle_unban_user(user_id)
 
     def handle_unban_user(self, user_id):
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
         user_service.unban_user(user_id)
         self.socketio.emit('unban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200
@@ -318,6 +345,8 @@ class GetIgnoredUsersView(BaseView):
         return self.handle_get_ignored_users(user_id)
 
     def handle_get_ignored_users(self, user_id):
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
         try:
             ignored_users = user_service.get_ignored_users(user_id)
         except ValueError as e:
@@ -448,6 +477,8 @@ class GetUserPostsView(BaseView):
         return self.handle_get_user_posts(data.get('user_id'))
 
     def handle_get_user_posts(self, user_id):
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
         posts_data = user_service.get_user_posts(user_id)
         self.socketio.emit('get user posts', {"user_id": user_id, "posts_data": posts_data}, room='room')
         return jsonify({"user_posts": posts_data}), 200
