@@ -5,7 +5,6 @@ from flask_cors import cross_origin
 from socketio_singleton import socketio
 from models import User
 from user_functions import UserService
-from flask_socketio import join_room
 
 user_service = UserService()
 
@@ -26,12 +25,6 @@ class UserView(BaseView):
     @socketio.on('new user')
     def handle_new_user(self, data):
         self.handle_user(data)
-
-    @socketio.on('join')
-    def on_join(self, data):
-        room = data['room']
-        join_room(room)
-        print('Client joined room:', room)
 
     def handle_user(self, data):
         try:
@@ -66,7 +59,7 @@ class CreateMessageView(BaseView):
             user_service.check_message_length(content, 500)
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
-        print('Received message:', data)  # New print statement
+        print('Received message:', data)
         return self.handle_create_message(data)
 
     def handle_create_message(self, data):
@@ -84,11 +77,12 @@ class CreateMessageView(BaseView):
         if user.banned:
             return jsonify({"message": f"User {username} is banned and cannot create messages."}), 403
 
-        user_service.create_message(user_id, content)
+        message_id = user_service.create_message(user_id, content)
 
-        print('Emitting message:', data)  # New print statement
+        print('Emitting message:', data)
+        data['message_id'] = message_id
         self.socketio.emit('create message', data, room='room')
-        return jsonify({"message": f"Message has been created for user {username}."}), 201
+        return jsonify({"message": f"Message has been created for user {username}.", "message_id": message_id}), 201
 
 
 class DeleteMessageView(BaseView):
@@ -163,9 +157,11 @@ class CreateCommentView(BaseView):
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
 
-        user_service.create_comment(user_id, message_id, content)
+        comment_id = user_service.create_comment(user_id, message_id, content)
+        data['comment_id'] = comment_id  # Add the comment id to the data
         self.socketio.emit('create comment', data, room='room')
-        return jsonify({"message": f"Comment has been created for message {message_id}."}), 201
+        return jsonify(
+            {"message": f"Comment has been created for message {message_id}.", "comment_id": comment_id}), 201
 
 
 class DeleteCommentView(BaseView):

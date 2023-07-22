@@ -7,10 +7,10 @@
     <script>
         var socket = io.connect('http://localhost:5000');
 
-socket.on('connect', function() {
-    console.log('Connected to server');
-    socket.emit('join', {room: 'room'});  // Join the 'room' room
-});
+        socket.on('connect', function () {
+            console.log('Connected to server');
+            socket.emit('join', {room: 'room'});  // Join the 'room' room
+        });
 
 
         socket.on('create message', function (data) {
@@ -18,6 +18,24 @@ socket.on('connect', function() {
             var messageList = document.getElementById('messageList');
             var newMessage = document.createElement('li');
             newMessage.textContent = data.username + ': ' + data.content;
+
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = function () {
+                deleteMessage(data.message_id);
+            };
+            newMessage.appendChild(deleteButton);
+
+            var editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.onclick = function () {
+                var newContent = prompt('Enter new message content');
+                if (newContent) {
+                    updateMessage(data.message_id, newContent);
+                }
+            };
+            newMessage.appendChild(editButton);
+
             messageList.appendChild(newMessage);
             console.log('Message added to list:', newMessage.textContent);  // New log statement
         });
@@ -44,6 +62,27 @@ socket.on('connect', function() {
 
             console.log('Sending message:', messageData);  // New log statement
             socket.emit('create message', messageData);
+        }
+
+        function deleteMessage(messageId) {
+            var messageData = {
+                user_id: 123,  // Replace with the actual user ID
+                message_id: messageId
+            };
+
+            console.log('Deleting message:', messageData);
+            socket.emit('delete message', messageData);
+        }
+
+        function updateMessage(messageId, newContent) {
+            var messageData = {
+                user_id: 123,  // Replace with the actual user ID
+                message_id: messageId,
+                new_content: newContent
+            };
+
+            console.log('Updating message:', messageData);
+            socket.emit('update message', messageData);
         }
     </script>
 </head>

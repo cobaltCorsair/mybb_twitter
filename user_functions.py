@@ -25,10 +25,11 @@ class UserService:
             user.avatar_url = avatar_url
             user.save()
 
-    def create_message(self, user_id: int, content: str) -> None:
+    def create_message(self, user_id: int, content: str) -> str:
         user = User.objects.get(forum_id=user_id)
         new_message = Message(user=user, content=content)
         new_message.save()
+        return str(new_message.id)
 
     def delete_message(self, message_id: str, user_id: int) -> None:
         try:
@@ -50,11 +51,12 @@ class UserService:
         message.content = new_content
         message.save()
 
-    def create_comment(self, user_id: int, message_id: str, content: str) -> None:
+    def create_comment(self, user_id: int, message_id: str, content: str) -> str:
         user = User.objects.get(forum_id=user_id)
         message = Message.objects.get(id=message_id)
         new_comment = Comment(user=user, message=message, content=content)
         new_comment.save()
+        return str(new_comment.id)
 
     def delete_comment(self, comment_id: str, user_id: int) -> None:
         comment = Comment.objects.get(id=comment_id)

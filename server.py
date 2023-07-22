@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
 from flask_cors import CORS
+from flask_socketio import join_room
+
 from views import UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView, \
     DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView, UnbanUserView, \
     IgnoreUserView, UnignoreUserView, GetIgnoredUsersView, ReportMessageView, ReportCommentView, GetTopUsersView, \
@@ -17,6 +19,14 @@ cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-T
                                     "methods": ["GET", "POST"]}})
 db = MongoEngine(app)
 socketio.init_app(app)
+
+
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+    print('Client joined room:', room)
+
 
 view_classes = [
     UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView,
