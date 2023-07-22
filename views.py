@@ -129,7 +129,10 @@ class UpdateMessageView(BaseView):
         message_id: str = data.get('message_id')
         user_id: int = data.get('user_id')
         new_content: str = data.get('new_content')
-
+        try:
+            user_service.check_message_length(new_content, 500)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
         user_service.edit_message(message_id, user_id, new_content)
         self.socketio.emit('update message', data, room='room')
         return jsonify({"message": f"Message with id {message_id} has been edited."}), 200
@@ -261,6 +264,8 @@ class BanUserView(BaseView):
     def handle_ban_user(self, user_id):
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
+        if user_service.check_ban_status(user_id):
+            return jsonify({"message": "User is already banned"}), 400
         user_service.ban_user(user_id)
         self.socketio.emit('ban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been banned."}), 200
@@ -278,6 +283,8 @@ class UnbanUserView(BaseView):
     def handle_unban_user(self, user_id):
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
+        if not user_service.check_ban_status(user_id):
+            return jsonify({"message": "User is not banned"}), 400
         user_service.unban_user(user_id)
         self.socketio.emit('unban user', {'user_id': user_id}, room='room')
         return jsonify({"message": f"User with id {user_id} has been unbanned."}), 200

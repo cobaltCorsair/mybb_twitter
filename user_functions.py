@@ -1,3 +1,5 @@
+from typing import Optional
+
 from mongoengine import DoesNotExist
 
 from admins import ADMIN_IDS
@@ -31,10 +33,12 @@ class UserService:
     def delete_message(self, message_id: str, user_id: int) -> None:
         try:
             message = Message.objects.get(id=message_id)
-            if message.user.forum_id == user_id or user_id in ADMIN_IDS:
-                message.delete()
         except DoesNotExist:
             raise ValueError("Message does not exist")
+        if message.user.forum_id == user_id or user_id in ADMIN_IDS:
+            message.delete()
+        else:
+            raise PermissionError("User does not have permission to delete this message")
 
     def edit_message(self, message_id: str, user_id: int, new_content: str) -> None:
         user = User.objects.get(forum_id=user_id)
@@ -104,13 +108,22 @@ class UserService:
             user = User.objects.get(forum_id=user_id)
             user.banned = True
             user.save()
-        except DoesNotExist:
-            raise ValueError("User does not exist")
+        except DoesNotExist as e:
+            raise ValueError("User does not exist") from e
+
+    def check_ban_status(self, user_id: int) -> Optional[User]:
+        user = User.objects.get(forum_id=user_id)
+        if user.banned:
+            raise PermissionError("User is banned")
+        return user
 
     def unban_user(self, user_id: int) -> None:
-        user = User.objects.get(forum_id=user_id)
-        user.banned = False
-        user.save()
+        try:
+            user = User.objects.get(forum_id=user_id)
+            user.banned = False
+            user.save()
+        except DoesNotExist as e:
+            raise ValueError("User does not exist") from e
 
     def ignore_user(self, user_id: int, ignored_user_id: int) -> None:
         try:
@@ -119,8 +132,8 @@ class UserService:
             if ignored_user not in user.ignored_users:
                 user.ignored_users.append(ignored_user)
                 user.save()
-        except DoesNotExist:
-            raise ValueError("User or ignored user does not exist")
+        except DoesNotExist as e:
+            raise ValueError("User or ignored user does not exist") from e
 
         user = User.objects.get(forum_id=user_id)
         ignored_user = User.objects.get(forum_id=ignored_user_id)
