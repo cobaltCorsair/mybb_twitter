@@ -1,5 +1,3 @@
-import re
-from typing import Optional
 from mongoengine import DoesNotExist
 
 from admins import ADMIN_IDS
