@@ -4,91 +4,203 @@
     <meta charset="UTF-8">
     <title>Socket.IO Test</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script>
-        var socket = io.connect('http://localhost:5000');
-
-        socket.on('connect', function () {
-            console.log('Connected to server');
-            socket.emit('join', {room: 'room'});  // Join the 'room' room
-        });
-
-
-        socket.on('create message', function (data) {
-            console.log('New message received:', data);
-            var messageList = document.getElementById('messageList');
-            var newMessage = document.createElement('li');
-            newMessage.textContent = data.username + ': ' + data.content;
-
-            var deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.onclick = function () {
-                deleteMessage(data.message_id);
-            };
-            newMessage.appendChild(deleteButton);
-
-            var editButton = document.createElement('button');
-            editButton.textContent = 'Edit';
-            editButton.onclick = function () {
-                var newContent = prompt('Enter new message content');
-                if (newContent) {
-                    updateMessage(data.message_id, newContent);
-                }
-            };
-            newMessage.appendChild(editButton);
-
-            messageList.appendChild(newMessage);
-            console.log('Message added to list:', newMessage.textContent);  // New log statement
-        });
-
-        socket.on('disconnect', function () {
-            console.log('Disconnected from server');
-        });
-
-        socket.on('connect_error', function (error) {
-            console.log('Connect error:', error);
-        });
-
-        socket.on('connect_timeout', function (timeout) {
-            console.log('Connect timeout:', timeout);
-        });
-
-        function createMessage() {
-            var messageData = {
-                user_id: 123,
-                username: 'testuser',
-                avatar_url: 'test',
-                content: 'This is a test message.'
-            };
-
-            console.log('Sending message:', messageData);  // New log statement
-            socket.emit('create message', messageData);
+    <style>
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-
-        function deleteMessage(messageId) {
-            var messageData = {
-                user_id: 123,  // Replace with the actual user ID
-                message_id: messageId
-            };
-
-            console.log('Deleting message:', messageData);
-            socket.emit('delete message', messageData);
+        #messageList {
+            flex: 0.8;
+            overflow-y: scroll;
         }
-
-        function updateMessage(messageId, newContent) {
-            var messageData = {
-                user_id: 123,  // Replace with the actual user ID
-                message_id: messageId,
-                new_content: newContent
-            };
-
-            console.log('Updating message:', messageData);
-            socket.emit('update message', messageData);
+        #inputArea {
+            flex: 0.2;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
         }
-    </script>
+        #inputArea img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+    </style>
 </head>
 <body>
 <h1>Socket.IO Test</h1>
-<button onclick="createMessage()">Create Message</button>
-<ul id="messageList"></ul>
+<div id="container">
+    <ul id="messageList"></ul>
+    <div id="inputArea">
+        <img id="avatar" src="" alt="User Avatar">
+        <span id="username"></span>
+        <input type="text" id="messageInput" placeholder="Enter your message">
+        <button onclick="createMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    var socket = io.connect('http://localhost:5000');
+    var username = 'testuser';  // Replace with the actual username
+    var avatarUrl = 'test';  // Replace with the actual avatar URL
+    document.getElementById('username').textContent = username;
+    document.getElementById('avatar').src = avatarUrl;
+
+    socket.on('connect', function () {
+        console.log('Connected to server');
+        socket.emit('join', {room: 'room'});  // Join the 'room' room
+    });
+
+    socket.on('create message', function (data) {
+        console.log('New message received:', data);
+        var messageList = document.getElementById('messageList');
+        var newMessage = document.createElement('li');
+        newMessage.textContent = data.username + ': ' + data.content;
+
+        var deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = function () {
+            deleteMessage(data.message_id);
+        };
+        newMessage.appendChild(deleteButton);
+
+        var editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.onclick = function () {
+            var newContent = prompt('Enter new message content');
+            if (newContent) {
+                updateMessage(data.message_id, newContent);
+            }
+        };
+        newMessage.appendChild(editButton);
+
+        var commentButton = document.createElement('button');
+        commentButton.textContent = 'Comment';
+        commentButton.onclick = function () {
+            var content = prompt('Enter your comment');
+            if (content) {
+                createComment(data.message_id, content);
+            }
+        };
+        newMessage.appendChild(commentButton);
+
+        var commentList = document.createElement('ul');
+        commentList.id = 'commentList' + data.message_id;
+        newMessage.appendChild(commentList);
+
+        var likeButton = document.createElement('button');
+        likeButton.textContent = 'Like';
+        likeButton.onclick = function () {
+            likeMessage(data.message_id);
+        };
+        newMessage.appendChild(likeButton);
+
+        var unlikeButton = document.createElement('button');
+        unlikeButton.textContent = 'Unlike';
+        unlikeButton.onclick = function () {
+            removeLikeMessage(data.message_id);
+        };
+        newMessage.appendChild(unlikeButton);
+
+        messageList.appendChild(newMessage);
+        console.log('Message added to list:', newMessage.textContent);  // New log statement
+    });
+
+    socket.on('create comment', function (data) {
+        console.log('New comment received:', data);
+        var commentList = document.getElementById('commentList' + data.message_id);
+        var newComment = document.createElement('li');
+        newComment.textContent = data.username + ': ' + data.content;
+
+        var editCommentButton = document.createElement('button');
+        editCommentButton.textContent = 'Edit Comment';
+        editCommentButton.onclick = function () {
+            var newContent = prompt('Enter new comment content');
+            if (newContent) {
+                updateComment(data.comment_id, newContent);
+            }
+        };
+        newComment.appendChild(editCommentButton);
+
+        commentList.appendChild(newComment);
+    });
+
+    function createMessage() {
+        var messageInput = document.getElementById('messageInput');
+        var messageData = {
+            user_id: 123,  // Replace with the actual user ID
+            username: username,
+            avatar_url: avatarUrl,
+            content: messageInput.value
+        };
+
+        console.log('Sending message:', messageData);  // New log statement
+        socket.emit('create message', messageData);
+        messageInput.value = '';  // Clear the input field
+    }
+
+    function deleteMessage(messageId) {
+        var messageData = {
+            user_id: 123,  // Replace with the actual user ID
+            message_id: messageId
+        };
+
+        console.log('Deleting message:', messageData);
+        socket.emit('delete message', messageData);
+    }
+
+    function updateMessage(messageId, newContent) {
+        var messageData = {
+            user_id: 123,  // Replace with the actual user ID
+            message_id: messageId,
+            new_content: newContent
+        };
+
+        console.log('Updating message:', messageData);
+        socket.emit('update message', messageData);
+    }
+
+    function createComment(messageId, content) {
+        var commentData = {
+            user_id: 123,  // Replace with the actual user ID
+            message_id: messageId,
+            content: content
+        };
+
+        console.log('Creating comment:', commentData);
+        socket.emit('create comment', commentData);
+    }
+
+    function updateComment(commentId, newContent) {
+        var commentData = {
+            user_id: 123,  // Replace with the actual user ID
+            comment_id: commentId,
+            new_content: newContent
+        };
+
+        console.log('Updating comment:', commentData);
+        socket.emit('update comment', commentData);
+    }
+
+    function likeMessage(messageId) {
+        var likeData = {
+            user_id: 123,  // Replace with the actual user ID
+            message_id: messageId
+        };
+
+        console.log('Liking message:', likeData);
+        socket.emit('like message', likeData);
+    }
+
+    function removeLikeMessage(messageId) {
+        var likeData = {
+            user_id: 123,  // Replace with the actual user ID
+            message_id: messageId
+        };
+
+        console.log('Removing like from message:', likeData);
+        socket.emit('remove like message', likeData);
+    }
+</script>
 </body>
 </html>

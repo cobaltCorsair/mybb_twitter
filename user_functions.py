@@ -3,7 +3,7 @@ from typing import Optional
 from mongoengine import DoesNotExist
 
 from admins import ADMIN_IDS
-from models import User, Message, Comment, Like, Report, Notification
+from models import User, Message, Comment, Like, Report, Notification, SubComment
 
 
 class UserService:
@@ -62,6 +62,34 @@ class UserService:
         comment = Comment.objects.get(id=comment_id)
         if comment.user.forum_id == user_id or user_id in ADMIN_IDS:
             comment.delete()
+
+    def update_comment(self, comment_id: str, user_id: int, new_content: str) -> None:
+        comment = Comment.objects.get(id=comment_id)
+        if comment.user.forum_id == user_id or user_id in ADMIN_IDS:
+            comment.content = new_content
+            comment.save()
+
+    def create_subcomment(self, user_id: int, comment_id: str, content: str) -> str:
+        user = User.objects.get(forum_id=user_id)
+        comment = Comment.objects.get(id=comment_id)
+        new_subcomment = SubComment(user=user, parent_comment=comment, content=content)
+        new_subcomment.save()
+        return str(new_subcomment.id)
+
+    def delete_subcomment(self, subcomment_id: str, user_id: int) -> None:
+        subcomment = SubComment.objects.get(id=subcomment_id)
+        if subcomment.user.forum_id == user_id or user_id in ADMIN_IDS:
+            subcomment.delete()
+
+    def edit_subcomment(self, subcomment_id: str, user_id: int, new_content: str) -> None:
+        user = User.objects.get(forum_id=user_id)
+        if not user:
+            raise DoesNotExist("User does not exist")
+        subcomment = SubComment.objects.get(id=subcomment_id)
+        if subcomment.user.forum_id != user_id:
+            raise PermissionError("User does not have permission to edit this subcomment")
+        subcomment.content = new_content
+        subcomment.save()
 
     def like(self, user_id: int, message_id: str, value: int) -> None:
         try:

@@ -188,6 +188,112 @@ class DeleteCommentView(BaseView):
         return jsonify({"message": f"Comment {comment_id} has been deleted."}), 200
 
 
+class UpdateCommentView(BaseView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        return self.handle_update_comment(data)
+
+    @socketio.on('update comment')
+    def handle_update_comment_socket(self, data: dict):
+        return self.handle_update_comment(data)
+
+    def handle_update_comment(self, data):
+        comment_id: str = data.get('comment_id')
+        user_id: int = data.get('user_id')
+        new_content: str = data.get('new_content')
+
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
+
+        user_service.update_comment(comment_id, user_id, new_content)
+        self.socketio.emit('update comment', data, room='room')
+        return jsonify({"message": f"Comment {comment_id} has been updated."}), 200
+
+
+class CreateSubCommentView(BaseView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        return self.handle_create_subcomment(data)
+
+    @socketio.on('create subcomment')
+    def handle_create_subcomment_socket(self, data: dict):
+        content: str = data.get('content')
+        try:
+            user_service.check_message_length(content, 500)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+        return self.handle_create_subcomment(data)
+
+    def handle_create_subcomment(self, data):
+        user_id: int = data.get('user_id')
+        comment_id: str = data.get('comment_id')
+        content: str = data.get('content')
+
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
+
+        subcomment_id = user_service.create_subcomment(user_id, comment_id, content)
+        data['subcomment_id'] = subcomment_id  # Add the subcomment id to the data
+        self.socketio.emit('create subcomment', data, room='room')
+        return jsonify(
+            {"message": f"SubComment has been created for comment {comment_id}.", "subcomment_id": subcomment_id}), 201
+
+
+class DeleteSubCommentView(BaseView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        return self.handle_delete_subcomment(data)
+
+    @socketio.on('delete subcomment')
+    def handle_delete_subcomment_socket(self, data: dict):
+        return self.handle_delete_subcomment(data)
+
+    def handle_delete_subcomment(self, data):
+        subcomment_id: str = data.get('subcomment_id')
+        user_id: int = data.get('user_id')
+
+        if not user_service.user_exists(user_id):
+            return jsonify({"message": "User does not exist"}), 404
+
+        user_service.delete_subcomment(subcomment_id, user_id)
+        self.socketio.emit('delete subcomment', data, room='room')
+        return jsonify({"message": f"Subcomment {subcomment_id} has been deleted."}), 200
+
+
+class UpdateSubCommentView(BaseView):
+    @cross_origin()
+    def post(self) -> tuple[Any, int]:
+        data: Optional[dict] = request.get_json()
+        if data is None:
+            return jsonify({"message": "No data provided"}), 400
+        return self.handle_update_subcomment(data)
+
+    @socketio.on('update subcomment')
+    def handle_update_subcomment_socket(self, data: dict):
+        return self.handle_update_subcomment(data)
+
+    def handle_update_subcomment(self, data):
+        subcomment_id: str = data.get('subcomment_id')
+        user_id: int = data.get('user_id')
+        new_content: str = data.get('new_content')
+        try:
+            user_service.check_message_length(new_content, 500)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+        user_service.edit_subcomment(subcomment_id, user_id, new_content)
+        self.socketio.emit('update subcomment', data, room='room')
+        return jsonify({"message": f"Subcomment with id {subcomment_id} has been edited."}), 200
+
+
 class LikeMessageView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:

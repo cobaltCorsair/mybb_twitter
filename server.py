@@ -4,7 +4,8 @@ from flask_cors import CORS
 from flask_socketio import join_room
 
 from views import UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView, \
-    DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView, UnbanUserView, \
+    DeleteCommentView, CreateSubCommentView, DeleteSubCommentView, UpdateSubCommentView, UpdateCommentView,\
+    LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView, UnbanUserView, \
     IgnoreUserView, UnignoreUserView, GetIgnoredUsersView, ReportMessageView, ReportCommentView, GetTopUsersView, \
     GetRecentMessagesView, SendNotificationView, GetMessageCommentsView, GetUserPostsView
 from socketio_singleton import socketio
@@ -30,7 +31,8 @@ def on_join(data):
 
 view_classes = [
     UserView, CreateMessageView, DeleteMessageView, UpdateMessageView, CreateCommentView,
-    DeleteCommentView, LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView,
+    DeleteCommentView, UpdateCommentView, CreateSubCommentView, DeleteSubCommentView, UpdateSubCommentView,
+    LikeMessageView, RemoveLikeMessageView, GetMessageLikesView, BanUserView,
     UnbanUserView, IgnoreUserView, UnignoreUserView, GetIgnoredUsersView, ReportMessageView,
     ReportCommentView, GetTopUsersView, GetRecentMessagesView, SendNotificationView,
     GetMessageCommentsView, GetUserPostsView
@@ -43,6 +45,7 @@ event_handlers = {
     'update message': 'handle_update_message_socket',
     'create comment': 'handle_create_comment_socket',
     'delete comment': 'handle_delete_comment_socket',
+    'update comment': 'handle_update_comment_socket',
     'like message': 'handle_like_message_socket',
     'remove like message': 'handle_remove_like_socket',
     'get message likes': 'handle_get_likes_socket',
@@ -58,6 +61,9 @@ event_handlers = {
     'send notification': 'handle_send_notification_socket',
     'get message comments': 'handle_get_message_comments_socket',
     'get user posts': 'handle_get_user_posts_socket',
+    'create subcomment': 'handle_create_subcomment_socket',
+    'delete subcomment': 'handle_delete_subcomment_socket',
+    'update subcomment': 'handle_update_subcomment_socket',
 }
 
 view_instances = {view_class: view_class(socketio) for view_class in view_classes}
@@ -77,6 +83,7 @@ url_rules = [
     ("/unban_user/<int:user_id>", UnbanUserView.as_view('unban_user', socketio=socketio), ['POST']),
     ("/create_comment", CreateCommentView.as_view('create_comment', socketio=socketio), ['POST']),
     ("/delete_comment", DeleteCommentView.as_view('delete_comment', socketio=socketio), ['POST']),
+    ("/update_comment", UpdateCommentView.as_view('update_comment', socketio=socketio), ['POST']),
     ("/like_message", LikeMessageView.as_view('like_message', socketio=socketio), ['POST']),
     ("/remove_like_message", RemoveLikeMessageView.as_view('remove_like_message', socketio=socketio), ['POST']),
     ("/get_message_likes/<string:message_id>", GetMessageLikesView.as_view('get_message_likes'), ['GET']),
@@ -89,7 +96,10 @@ url_rules = [
     ("/get_recent_messages", GetRecentMessagesView.as_view('get_recent_messages'), ['GET']),
     ("/send_notification", SendNotificationView.as_view('send_notification', socketio=socketio), ['POST']),
     ("/get_message_comments/<string:message_id>", GetMessageCommentsView.as_view('get_message_comments'), ['GET']),
-    ("/get_user_posts/<int:user_id>", GetUserPostsView.as_view('get_user_posts'), ['GET'])
+    ("/get_user_posts/<int:user_id>", GetUserPostsView.as_view('get_user_posts'), ['GET']),
+    ("/create_subcomment", CreateSubCommentView.as_view('create_subcomment', socketio=socketio), ['POST']),
+    ("/delete_subcomment", DeleteSubCommentView.as_view('delete_subcomment', socketio=socketio), ['POST']),
+    ("/update_subcomment", UpdateSubCommentView.as_view('update_subcomment', socketio=socketio), ['POST']),
 ]
 
 for url_rule, view, methods in url_rules:

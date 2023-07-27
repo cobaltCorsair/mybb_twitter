@@ -47,6 +47,17 @@ class Comment(db.Document):
     likes = ListField(EmbeddedDocumentField(Like))
 
 
+class SubComment(db.Document):
+    """
+    SubComment db class
+    """
+    user = ReferenceField(User, reverse_delete_rule=CASCADE)
+    parent_comment = ReferenceField(Comment, reverse_delete_rule=CASCADE)
+    content = StringField()
+    created_at = DateTimeField()
+    likes = ListField(EmbeddedDocumentField(Like))
+
+
 class Report(db.Document):
     """
     Report db class
