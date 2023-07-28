@@ -25,6 +25,14 @@
             width: 50px;
             height: 50px;
         }
+        .like-button, .unlike-button {
+            background: transparent;
+            border: none;
+        }
+        .like-button:before, .unlike-button:before {
+            content: '❤️';
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -89,14 +97,14 @@
         newMessage.appendChild(commentList);
 
         var likeButton = document.createElement('button');
-        likeButton.textContent = 'Like';
+        likeButton.className = 'like-button';
         likeButton.onclick = function () {
             likeMessage(data.message_id);
         };
         newMessage.appendChild(likeButton);
 
         var unlikeButton = document.createElement('button');
-        unlikeButton.textContent = 'Unlike';
+        unlikeButton.className = 'unlike-button';
         unlikeButton.onclick = function () {
             removeLikeMessage(data.message_id);
         };
@@ -112,6 +120,13 @@
         var newComment = document.createElement('li');
         newComment.textContent = data.username + ': ' + data.content;
 
+        var deleteCommentButton = document.createElement('button');
+        deleteCommentButton.textContent = 'Delete Comment';
+        deleteCommentButton.onclick = function () {
+            deleteComment(data.comment_id);
+        };
+        newComment.appendChild(deleteCommentButton);
+
         var editCommentButton = document.createElement('button');
         editCommentButton.textContent = 'Edit Comment';
         editCommentButton.onclick = function () {
@@ -122,7 +137,47 @@
         };
         newComment.appendChild(editCommentButton);
 
+        var subcommentButton = document.createElement('button');
+        subcommentButton.textContent = 'Subcomment';
+        subcommentButton.onclick = function () {
+            var content = prompt('Enter your subcomment');
+            if (content) {
+                createSubcomment(data.comment_id, content);
+            }
+        };
+        newComment.appendChild(subcommentButton);
+
+        var subcommentList = document.createElement('ul');
+        subcommentList.id = 'subcommentList' + data.comment_id;
+        newComment.appendChild(subcommentList);
+
         commentList.appendChild(newComment);
+    });
+
+    socket.on('create subcomment', function (data) {
+        console.log('New subcomment received:', data);
+        var subcommentList = document.getElementById('subcommentList' + data.comment_id);
+        var newSubcomment = document.createElement('li');
+        newSubcomment.textContent = data.username + ': ' + data.content;
+
+        var deleteSubcommentButton = document.createElement('button');
+        deleteSubcommentButton.textContent = 'Delete Subcomment';
+        deleteSubcommentButton.onclick = function () {
+            deleteSubcomment(data.subcomment_id);
+        };
+        newSubcomment.appendChild(deleteSubcommentButton);
+
+        var editSubcommentButton = document.createElement('button');
+        editSubcommentButton.textContent = 'Edit Subcomment';
+        editSubcommentButton.onclick = function () {
+            var newContent = prompt('Enter new subcomment content');
+            if (newContent) {
+                updateSubcomment(data.subcomment_id, newContent);
+            }
+        };
+        newSubcomment.appendChild(editSubcommentButton);
+
+        subcommentList.appendChild(newSubcomment);
     });
 
     function createMessage() {
@@ -171,6 +226,16 @@
         socket.emit('create comment', commentData);
     }
 
+    function deleteComment(commentId) {
+        var commentData = {
+            user_id: 123,  // Replace with the actual user ID
+            comment_id: commentId
+        };
+
+        console.log('Deleting comment:', commentData);
+        socket.emit('delete comment', commentData);
+    }
+
     function updateComment(commentId, newContent) {
         var commentData = {
             user_id: 123,  // Replace with the actual user ID
@@ -180,6 +245,38 @@
 
         console.log('Updating comment:', commentData);
         socket.emit('update comment', commentData);
+    }
+
+    function createSubcomment(commentId, content) {
+        var subcommentData = {
+            user_id: 123,  // Replace with the actual user ID
+            comment_id: commentId,
+            content: content
+        };
+
+        console.log('Creating subcomment:', subcommentData);
+        socket.emit('create subcomment', subcommentData);
+    }
+
+    function deleteSubcomment(subcommentId) {
+        var subcommentData = {
+            user_id: 123,  // Replace with the actual user ID
+            subcomment_id: subcommentId
+        };
+
+        console.log('Deleting subcomment:', subcommentData);
+        socket.emit('delete subcomment', subcommentData);
+    }
+
+    function updateSubcomment(subcommentId, newContent) {
+        var subcommentData = {
+            user_id: 123,  // Replace with the actual user ID
+            subcomment_id: subcommentId,
+            new_content: newContent
+        };
+
+        console.log('Updating subcomment:', subcommentData);
+        socket.emit('update subcomment', subcommentData);
     }
 
     function likeMessage(messageId) {
