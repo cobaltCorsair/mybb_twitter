@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<div id="mySidebar" class="sidebar">
+    <div class="user-container" id="userContainer">
+        <div class="toggle-btn" onclick="toggleUserInfo()"></div>
+
+        <div class="notification-bell" onclick="toggleNotifications()">
+            <i class="fas fa-bell"></i>
+            <div class="notification-count" id="notificationCount">5</div>
+            <div class="notification-panel" id="notificationPanel">
+                <!-- Здесь будет список комментариев -->
+                <div class="comment">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    <span>Comment 1</span>
+                </div>
+                <div class="comment">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    <span>Comment 2</span>
+                </div>
+                <div class="comment">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    <span>Comment 3</span>
+                </div>
+                <button class="clear-button" onclick="clearNotifications()">Clear All Notifications</button>
+            </div>
+        </div>
+
+        <div class="blocked-users" onclick="toggleBlockedUsers()">
+            <i class="fas fa-ban"></i>
+            <div class="blocked-users-panel" id="blockedUsersPanel">
+                <!-- Здесь будет список заблокированных пользователей -->
+                <div class="blocked-user">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    User1 <span class="unblock-user" onclick="unblockUser('User1')">&times;</span>
+                </div>
+                <div class="blocked-user">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    User2 <span class="unblock-user" onclick="unblockUser('User2')">&times;</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-info" id="userInfo">
+            <img src="https://via.placeholder.com/50" alt="User Avatar">
+            <div class="tweet-input">
+                <span id="username">Username</span>
+                <textarea id="tweetInput" placeholder="Enter your tweet" onkeyup="updateCounter()"></textarea>
+                <div class="tweet-counter" id="tweetCounter">0/500</div>
+                <button onclick="createTweet()">Tweet</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+    <div id="main">
+        <button class="openbtn" onclick="toggleNav()">Twitter</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
