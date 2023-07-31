@@ -1,300 +1,316 @@
 @media only screen and (max-width: 600px) {
-            #mySidebar {
-                width: 100%;
-            }
+    #mySidebar {
+        width: 100%;
+    }
 
-            .openbtn {
-                right: 0;
-            }
-        }
+    .openbtn {
+        right: 0;
+    }
+}
 
-        body {
-            font-family: "Lato", sans-serif;
-            background-color: #f4f4f4;
-        }
+body {
+    font-family: "Lato", sans-serif;
+    background-color: #f4f4f4;
+}
 
-        #mySidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 1;
-            top: 0;
-            right: 0;
-            background-color: #fff;
-            overflow-x: hidden;
-            transition: 0.5s;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-        }
+#mySidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    background-color: #fff;
+    overflow-x: hidden;
+    transition: 0.5s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}
 
-        .openbtn {
-            font-size: 20px;
-            cursor: pointer;
-            background-color: #1da1f2;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 35% 0 35% 0;
-            margin: 10px;
-            position: absolute;
-            top: 50%;
-            right: -50px;
-            transform: rotate(-90deg);
-            transform-origin: top left;
-            transition: 0.5s;
-        }
+.openbtn {
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #1da1f2;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 35% 0 35% 0;
+    margin: 10px;
+    position: absolute;
+    top: 50%;
+    right: -50px;
+    transform: rotate(-90deg);
+    transform-origin: top left;
+    transition: 0.5s;
+}
 
-        .openbtn:hover {
-            background-color: #1991d6;
-        }
+.openbtn:hover {
+    background-color: #1991d6;
+}
 
-        .user-container {
-            position: relative;
-            margin-top: auto;
-            transition: 0.5s;
-        }
+.user-container {
+    position: relative;
+    margin-top: auto;
+    transition: 0.5s;
+}
 
-        .toggle-btn {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 106px;
-            height: 37px;
-            background-color: #1da1f2;
-            border-radius: 0 0 5% 5%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            transition: 0.5s;
-            opacity: 1;
-        }
+.toggle-btn {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 106px;
+    height: 37px;
+    background-color: #1da1f2;
+    border-radius: 0 0 5% 5%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    transition: 0.5s;
+    opacity: 1;
+}
 
-        .user-container.closed .toggle-btn {
-            opacity: 0;
-        }
+.user-container.closed .toggle-btn {
+    opacity: 0;
+}
 
-        .user-info {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-top: 1px solid #e6e6e6;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow: hidden;
-        }
+.user-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-top: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow: hidden;
+}
 
-        .user-info img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
+.user-info img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+#username {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    display: inline-block;
+}
 
-        .user-info .tweet-input {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            flex-grow: 1;
-        }
+.user-info .tweet-input {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-grow: 1;
+}
 
-        .user-info textarea {
-            margin-top: 10px;
-            padding: 5px;
-            width: 90%;
-            border: 1px solid #e6e6e6;
-            border-radius: 5px;
-            resize: vertical;
-            min-height: 50px;
-            max-height: 100px;
-        }
+.user-info textarea {
+    margin-top: 10px;
+    padding: 5px;
+    width: 90%;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    resize: vertical;
+    min-height: 50px;
+    max-height: 100px;
+}
 
-        .user-info .tweet-counter {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
+.user-info .tweet-counter {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+}
 
-        .user-info button {
-            margin-top: 10px;
-            padding: 5px 10px;
-            color: white;
-            background-color: #1da1f2;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+.user-info button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    color: white;
+    background-color: #1da1f2;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
 
-        .user-info button:hover {
-            background-color: #1991d6;
-        }
+.user-info button:hover {
+    background-color: #1991d6;
+}
 
-        .user-info.minimized {
-            height: 10px;
-        }
+.user-info.minimized {
+    height: 10px;
+}
 
-        .user-info.minimized .tweet-input,
-        .user-info.minimized img {
-            display: none;
-        }
+.user-info.minimized .tweet-input,
+.user-info.minimized img {
+    display: none;
+}
 
-        .notification-bell {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            cursor: pointer;
-            background-color: #1da1f2;
-            color: white;
-            padding: 5px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
+.notification-bell {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    cursor: pointer;
+    background-color: #1da1f2;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
 
 
-        .notification-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: red;
-            color: white;
-            padding: 2px 5px;
-            border-radius: 50%;
-            font-size: 10px;
-        }
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 50%;
+    font-size: 10px;
+}
 
-        .notification-panel {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            right: 0;
-            background-color: #f9f9f9;
-            border: 1px solid #e6e6e6;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            z-index: 3;
-            font-size: 12px;
-            width: 100%;
-            min-width: 200px;
-        }
+.notification-panel {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    background-color: #f9f9f9;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 3;
+    font-size: 12px;
+    width: 100%;
+    min-width: 200px;
+}
 
-        .notification-panel .comment {
-            display: flex;
-            align-items: center;
-            padding: 5px;
-            text-decoration: none;
-            color: #333;
-        }
+.notification-panel .comment {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    text-decoration: none;
+    color: #333;
+}
 
-        .notification-panel a {
-            display: block;
-            padding: 5px;
-            text-decoration: none;
-            color: #333;
-        }
+.notification-panel a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+    color: #333;
+}
 
-        .notification-panel a:hover {
-            background-color: #f0f0f0;
-        }
+.notification-panel a:hover {
+    background-color: #f0f0f0;
+}
 
-        .notification-panel .comment img {
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-        }
+.notification-panel .comment img {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
 
-        .notification-panel .comment:hover {
-            background-color: #f0f0f0;
-        }
+.notification-panel .comment:hover {
+    background-color: #f0f0f0;
+}
 
-        .notification-panel .clear-button {
-            display: block;
-            text-align: center;
-            padding: 5px;
-            background-color: #f4f4f4;
-            border: none;
-            cursor: pointer;
-            color: #888;
-            font-size: 12px;
-            text-decoration: underline;
-            width: 100%;
-        }
+.notification-panel .clear-button {
+    display: block;
+    text-align: center;
+    padding: 5px;
+    background-color: #f4f4f4;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 12px;
+    text-decoration: underline;
+    width: 100%;
+}
 
-        .notification-panel .clear-button:hover {
-            color: #555;
-        }
+.notification-panel .clear-button:hover {
+    color: #555;
+}
 
-        .blocked-users {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            background-color: #f44336;
-            color: white;
-            padding: 5px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
+.blocked-users {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    background-color: #f44336;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
 
-        .blocked-users-panel {
-            position: absolute;
-            bottom: 40px;
-            right: 0;
-            background-color: #f9f9f9;
-            border: 1px solid #e6e6e6;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            z-index: 3;
-            font-size: 12px;
-            width: 200px;
-        }
+.blocked-users-panel {
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+    background-color: #f9f9f9;
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 3;
+    font-size: 12px;
+    width: 200px;
+}
 
-        .unblock-user {
-            cursor: pointer;
-            color: red;
-            margin-left: 10px;
-        }
+.unblock-user {
+    cursor: pointer;
+    color: red;
+    margin-left: auto;
+}
 
-        .blocked-user {
-            display: flex;
-            align-items: center;
-            padding: 5px;
-            color: #333;
-        }
+.blocked-user {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    color: #333;
+    max-width: 200px;
+}
 
-        .blocked-user img {
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-        }
+.blocked-user img {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
 
-        .blocked-user:hover {
-            background-color: #f0f0f0;
-        }
+.blocked-user:hover {
+    background-color: #f0f0f0;
+}
 
-        .blocked-user span {
-            color: #f44336;
-            flex-grow: 1;
-            text-align: right;
-        }
+.blocked-user span {
+    color: #f44336;
+    flex-grow: 1;
+    text-align: right;
+}
+.blocked-user span.nickname {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Устанавливаем максимальную ширину для никнейма */
+    flex-grow: 1;
+    color: #333;
+}
