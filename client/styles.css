@@ -100,6 +100,7 @@ body {
     margin-right: 10px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
+
 #username {
     white-space: nowrap;
     overflow: hidden;
@@ -306,6 +307,7 @@ body {
     flex-grow: 1;
     text-align: right;
 }
+
 .blocked-user span.nickname {
     white-space: nowrap;
     overflow: hidden;
@@ -334,6 +336,10 @@ body {
     font-size: 12px;
 }
 
+.tweet-header img, .comment-header img, .subcomment-header img {
+    border-radius: 50%;
+}
+
 .tweet-username, .comment-username, .subcomment-username {
     flex-grow: 1;
     margin-left: 5px;
@@ -341,6 +347,8 @@ body {
 
 .tweet-time, .comment-time, .subcomment-time {
     color: #888;
+    font-size: 12px;
+    margin: 5px 0;
 }
 
 .tweet-content, .comment-content, .subcomment-content {
@@ -348,10 +356,9 @@ body {
     margin: 5px 0;
 }
 
-.tweet-actions {
+.tweet-actions, .comment-actions, .subcomment-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     font-size: 12px;
 }
 
@@ -366,7 +373,7 @@ body {
     align-items: center;
 }
 
-.like-button.liked {
+.like-button.liked i {
     color: #f44336;
 }
 
@@ -375,9 +382,30 @@ body {
 }
 
 .comments {
-    margin-left: 30px;
+    margin-left: 20px;
 }
 
 .subcomments {
-    margin-left: 60px;
+    margin-left: 40px;
+}
+
+.tweet-actions, .comment-actions, .subcomment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.tweet-time-date, .comment-time-date, .subcomment-time-date {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.tweet-time, .comment-time, .subcomment-time,
+.tweet-date, .comment-date, .subcomment-date {
+    margin: 0 5px;
+}
+
+.comments, .subcomments {
+    display: none; /* Скрыть комментарии и сабкомментарии по умолчанию */
 }
