@@ -314,3 +314,70 @@ body {
     flex-grow: 1;
     color: #333;
 }
+
+.tweet-container {
+    padding: 10px;
+    margin: 10px;
+    max-width: 400px;
+}
+
+.tweet, .comment, .subcomment {
+    border: 1px solid #e6e6e6;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px 0;
+}
+
+.tweet-header, .comment-header, .subcomment-header {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+.tweet-username, .comment-username, .subcomment-username {
+    flex-grow: 1;
+    margin-left: 5px;
+}
+
+.tweet-time, .comment-time, .subcomment-time {
+    color: #888;
+}
+
+.tweet-content, .comment-content, .subcomment-content {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.tweet-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 12px;
+}
+
+.like-button, .comment-button, .subcomment-button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 14px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.like-button.liked {
+    color: #f44336;
+}
+
+.like-count, .comment-count, .subcomment-count {
+    margin-left: 3px;
+}
+
+.comments {
+    margin-left: 30px;
+}
+
+.subcomments {
+    margin-left: 60px;
+}

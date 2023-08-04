@@ -70,3 +70,8 @@ function toggleNav() {
             }
         }
     }
+
+    function toggleComments(button) {
+    const commentsSection = button.nextElementSibling;
+    commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+}
