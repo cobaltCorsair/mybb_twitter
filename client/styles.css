@@ -345,7 +345,8 @@ body {
     margin-left: 5px;
 }
 
-.tweet-time, .comment-time, .subcomment-time {
+.tweet-time, .comment-time, .subcomment-time,
+.tweet-date, .comment-date, .subcomment-date {
     color: #888;
     font-size: 12px;
     margin: 5px 0;
@@ -399,11 +400,6 @@ body {
     display: flex;
     align-items: center;
     margin-right: 10px;
-}
-
-.tweet-time, .comment-time, .subcomment-time,
-.tweet-date, .comment-date, .subcomment-date {
-    margin: 0 5px;
 }
 
 .comments, .subcomments {
