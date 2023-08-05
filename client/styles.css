@@ -363,21 +363,6 @@ body {
     font-size: 12px;
 }
 
-.like-button, .comment-button, .subcomment-button {
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 14px;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-}
-
-.like-button.liked i {
-    color: #f44336;
-}
-
 .like-count, .comment-count, .subcomment-count {
     margin-left: 3px;
 }
@@ -403,5 +388,25 @@ body {
 }
 
 .comments, .subcomments {
-    display: none; /* Скрыть комментарии и сабкомментарии по умолчанию */
+    display: none;
+}
+
+.like-button, .comment-button, .subcomment-button, .edit-button, .delete-button, .blacklist-button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #657786;
+    font-size: 16px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.like-button:hover, .comment-button:hover, .subcomment-button:hover, .edit-button:hover, .delete-button:hover, .blacklist-button:hover {
+    color: #1da1f2;
+}
+
+.like-button.liked i {
+    color: #f44336;
 }

@@ -84,3 +84,15 @@ function toggleSubcomments(button) {
 function toggleLike(button) {
     button.classList.toggle('liked');
 }
+
+function confirmDelete(button) {
+    if (confirm('Вы уверены, что хотите удалить этот элемент?')) {
+        deleteTweet(button);
+    }
+}
+
+function confirmBlacklist(button) {
+    if (confirm('Вы уверены, что хотите добавить этого пользователя в черный список?')) {
+        addToBlacklist(button);
+    }
+}
