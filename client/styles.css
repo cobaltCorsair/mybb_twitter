@@ -418,3 +418,44 @@ body {
         right: 0;
     }
 }
+
+.comment, .subcomment {
+    position: relative;
+    padding-left: 20px;
+}
+
+.comment::before, .subcomment::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 2px;
+    height: 50%;
+    background-color: var(--border-color);
+}
+
+
+.comment::after, .subcomment::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    width: 8px;
+    height: 2px;
+    background-color: var(--border-color);
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.line-dot {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: -12px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--border-color);
+    border-radius: 50%;
+    z-index: 2;
+}
+
