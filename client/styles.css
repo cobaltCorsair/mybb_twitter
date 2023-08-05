@@ -1,16 +1,18 @@
-@media only screen and (max-width: 600px) {
-    #mySidebar {
-        width: 100%;
-    }
-
-    .openbtn {
-        right: 0;
-    }
+:root {
+    --primary-color: #1da1f2;
+    --secondary-color: #1991d6;
+    --text-color: #333;
+    --light-text-color: #888;
+    --bg-color: #f4f4f4;
+    --light-bg-color: #f9f9f9;
+    --border-color: #e6e6e6;
+    --font-family: "Lato", sans-serif;
+    --font-size: 12px;
 }
 
 body {
-    font-family: "Lato", sans-serif;
-    background-color: #f4f4f4;
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
 }
 
 #mySidebar {
@@ -32,7 +34,7 @@ body {
 .openbtn {
     font-size: 20px;
     cursor: pointer;
-    background-color: #1da1f2;
+    background-color: var(--primary-color);
     color: white;
     padding: 10px 15px;
     border: none;
@@ -47,7 +49,7 @@ body {
 }
 
 .openbtn:hover {
-    background-color: #1991d6;
+    background-color: var(--secondary-color);
 }
 
 .user-container {
@@ -63,7 +65,7 @@ body {
     transform: translateX(-50%);
     width: 106px;
     height: 37px;
-    background-color: #1da1f2;
+    background-color: var(--primary-color);
     border-radius: 0 0 5% 5%;
     cursor: pointer;
     display: flex;
@@ -80,9 +82,9 @@ body {
 }
 
 .user-info {
-    background-color: #f9f9f9;
+    background-color: var(--light-bg-color);
     padding: 15px;
-    border-top: 1px solid #e6e6e6;
+    border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -120,7 +122,7 @@ body {
     margin-top: 10px;
     padding: 5px;
     width: 90%;
-    border: 1px solid #e6e6e6;
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     resize: vertical;
     min-height: 50px;
@@ -128,8 +130,8 @@ body {
 }
 
 .user-info .tweet-counter {
-    font-size: 12px;
-    color: #888;
+    font-size: var(--font-size);
+    color: var(--light-text-color);
     margin-top: 5px;
 }
 
@@ -137,14 +139,14 @@ body {
     margin-top: 10px;
     padding: 5px 10px;
     color: white;
-    background-color: #1da1f2;
+    background-color: var(--primary-color);
     border: none;
     cursor: pointer;
     border-radius: 5px;
 }
 
 .user-info button:hover {
-    background-color: #1991d6;
+    background-color: var(--secondary-color);
 }
 
 .user-info.minimized {
@@ -161,7 +163,7 @@ body {
     top: 10px;
     left: 10px;
     cursor: pointer;
-    background-color: #1da1f2;
+    background-color: var(--primary-color);
     color: white;
     padding: 5px;
     border-radius: 50%;
@@ -170,7 +172,6 @@ body {
     justify-content: center;
     z-index: 2;
 }
-
 
 .notification-count {
     position: absolute;
@@ -188,14 +189,14 @@ body {
     bottom: 40px;
     left: 0;
     right: 0;
-    background-color: #f9f9f9;
-    border: 1px solid #e6e6e6;
+    background-color: var(--light-bg-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     max-height: 200px;
     overflow-y: auto;
     display: none;
     z-index: 3;
-    font-size: 12px;
+    font-size: var(--font-size);
     width: 100%;
     min-width: 200px;
 }
@@ -205,14 +206,14 @@ body {
     align-items: center;
     padding: 5px;
     text-decoration: none;
-    color: #333;
+    color: var(--text-color);
 }
 
 .notification-panel a {
     display: block;
     padding: 5px;
     text-decoration: none;
-    color: #333;
+    color: var(--text-color);
 }
 
 .notification-panel a:hover {
@@ -237,8 +238,8 @@ body {
     background-color: #f4f4f4;
     border: none;
     cursor: pointer;
-    color: #888;
-    font-size: 12px;
+    color: var(--light-text-color);
+    font-size: var(--font-size);
     text-decoration: underline;
     width: 100%;
 }
@@ -266,14 +267,14 @@ body {
     position: absolute;
     bottom: 40px;
     right: 0;
-    background-color: #f9f9f9;
-    border: 1px solid #e6e6e6;
+    background-color: var(--light-bg-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
     max-height: 200px;
     overflow-y: auto;
     display: none;
     z-index: 3;
-    font-size: 12px;
+    font-size: var(--font-size);
     width: 200px;
 }
 
@@ -287,7 +288,7 @@ body {
     display: flex;
     align-items: center;
     padding: 5px;
-    color: #333;
+    color: var(--text-color);
     max-width: 200px;
 }
 
@@ -314,7 +315,7 @@ body {
     text-overflow: ellipsis;
     max-width: 150px; /* Устанавливаем максимальную ширину для никнейма */
     flex-grow: 1;
-    color: #333;
+    color: var(--text-color);
 }
 
 .tweet-container {
@@ -330,10 +331,20 @@ body {
     margin: 5px 0;
 }
 
+.comments {
+    margin-left: 20px;
+    display: none;
+}
+
+.subcomments {
+    margin-left: 40px; /* Добавляем больший отступ слева для подкомментариев */
+    display: none;
+}
+
 .tweet-header, .comment-header, .subcomment-header {
     display: flex;
     align-items: center;
-    font-size: 12px;
+    font-size: var(--font-size);
 }
 
 .tweet-header img, .comment-header img, .subcomment-header img {
@@ -347,32 +358,14 @@ body {
 
 .tweet-time, .comment-time, .subcomment-time,
 .tweet-date, .comment-date, .subcomment-date {
-    color: #888;
-    font-size: 12px;
+    color: var(--light-text-color);
+    font-size: var(--font-size);
     margin: 5px 0;
 }
 
 .tweet-content, .comment-content, .subcomment-content {
     font-size: 14px;
     margin: 5px 0;
-}
-
-.tweet-actions, .comment-actions, .subcomment-actions {
-    display: flex;
-    align-items: center;
-    font-size: 12px;
-}
-
-.like-count, .comment-count, .subcomment-count {
-    margin-left: 3px;
-}
-
-.comments {
-    margin-left: 20px;
-}
-
-.subcomments {
-    margin-left: 40px;
 }
 
 .tweet-actions, .comment-actions, .subcomment-actions {
@@ -404,9 +397,24 @@ body {
 }
 
 .like-button:hover, .comment-button:hover, .subcomment-button:hover, .edit-button:hover, .delete-button:hover, .blacklist-button:hover {
-    color: #1da1f2;
+    color: var(--primary-color);
 }
 
 .like-button.liked i {
     color: #f44336;
+}
+
+.like-count, .comment-count, .subcomment-count {
+    margin-left: 3px;
+}
+
+
+@media only screen and (max-width: 600px) {
+    #mySidebar {
+        width: 100%;
+    }
+
+    .openbtn {
+        right: 0;
+    }
 }
