@@ -8,49 +8,24 @@
 
 <body>
 <div id="mySidebar" class="sidebar">
-
-    <div class="tweet-container">
-        <div class="tweet">
-            <div class="tweet-header">
-                <img src="https://via.placeholder.com/30" alt="User Avatar">
-                <span class="tweet-username">Username</span>
-            </div>
-            <div class="tweet-content">
-                This is a tweet content.
-            </div>
-            <div class="tweet-time-date">
-                <span class="tweet-time">12:34 PM</span> · <span class="tweet-date">May 12</span>
-            </div>
-            <div class="tweet-actions">
-                <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
-                <span class="like-count">5</span>
-                <button class="comment-button" onclick="toggleComments(this)"><i class="far fa-comment"></i><span
-                        class="comment-count">3</span></button>
-                <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
-                <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i></button>
-                <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i></button>
-            </div>
-        </div>
-        <div class="comments">
-            <div class="comment">
-                <div class="line-container">
-                 <span class="line-dot"></span>
-                </div>
-                <div class="comment-header">
+    <div id="tweets-wrapper">
+        <div class="tweet-container">
+            <div class="tweet">
+                <div class="tweet-header">
                     <img src="https://via.placeholder.com/30" alt="User Avatar">
-                    <span class="comment-username">Commenter</span>
+                    <span class="tweet-username">Username</span>
                 </div>
-                <div class="comment-content">
-                    This is a comment.
+                <div class="tweet-content">
+                    This is a tweet content.
                 </div>
-                <div class="comment-time-date">
-                    <span class="comment-time">12:45 PM</span> · <span class="comment-date">May 12</span>
+                <div class="tweet-time-date">
+                    <span class="tweet-time">12:34 PM</span> · <span class="tweet-date">May 12</span>
                 </div>
-                <div class="comment-actions">
+                <div class="tweet-actions">
                     <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
-                    <span class="like-count">2</span>
-                    <button class="subcomment-button" onclick="toggleSubcomments(this)"><i
-                            class="fas fa-reply"></i><span class="subcomment-count">2</span></button>
+                    <span class="like-count">5</span>
+                    <button class="comment-button" onclick="toggleComments(this)"><i class="far fa-comment"></i><span
+                            class="comment-count">3</span></button>
                     <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
                     <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
                     </button>
@@ -58,24 +33,26 @@
                     </button>
                 </div>
             </div>
-            <div class="subcomments">
-                <div class="subcomment">
+            <div class="comments">
+                <div class="comment">
                     <div class="line-container">
-                       <span class="line-dot"></span>
+                        <span class="line-dot"></span>
                     </div>
-                    <div class="subcomment-header">
+                    <div class="comment-header">
                         <img src="https://via.placeholder.com/30" alt="User Avatar">
-                        <span class="subcomment-username">Subcommenter</span>
+                        <span class="comment-username">Commenter</span>
                     </div>
-                    <div class="subcomment-content">
-                        This is a subcomment.
+                    <div class="comment-content">
+                        This is a comment 1.
                     </div>
-                    <div class="subcomment-time-date">
-                        <span class="subcomment-time">12:50 PM</span> · <span class="subcomment-date">May 12</span>
+                    <div class="comment-time-date">
+                        <span class="comment-time">12:45 PM</span> · <span class="comment-date">May 12</span>
                     </div>
-                    <div class="subcomment-actions">
+                    <div class="comment-actions">
                         <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
-                        <span class="like-count">1</span>
+                        <span class="like-count">2</span>
+                        <button class="subcomment-button" onclick="toggleSubcomments(this)"><i
+                                class="fas fa-reply"></i><span class="subcomment-count">2</span></button>
                         <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
                         <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
                         </button>
@@ -83,12 +60,192 @@
                         </button>
                     </div>
                 </div>
-                <!-- More subcomments -->
+                <div class="comment">
+                    <div class="line-container">
+                        <span class="line-dot"></span>
+                    </div>
+                    <div class="comment-header">
+                        <img src="https://via.placeholder.com/30" alt="User Avatar">
+                        <span class="comment-username">Commenter</span>
+                    </div>
+                    <div class="comment-content">
+                        This is a comment 1.
+                    </div>
+                    <div class="comment-time-date">
+                        <span class="comment-time">12:45 PM</span> · <span class="comment-date">May 12</span>
+                    </div>
+                    <div class="comment-actions">
+                        <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                        <span class="like-count">2</span>
+                        <button class="subcomment-button" onclick="toggleSubcomments(this)"><i
+                                class="fas fa-reply"></i><span class="subcomment-count">2</span></button>
+                        <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                        <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                        </button>
+                        <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="subcomments">
+                    <div class="subcomment">
+                        <div class="line-container">
+                            <span class="line-dot"></span>
+                        </div>
+                        <div class="subcomment-header">
+                            <img src="https://via.placeholder.com/30" alt="User Avatar">
+                            <span class="subcomment-username">Subcommenter</span>
+                        </div>
+                        <div class="subcomment-content">
+                            This is a subcomment.
+                        </div>
+                        <div class="subcomment-time-date">
+                            <span class="subcomment-time">12:50 PM</span> · <span class="subcomment-date">May 12</span>
+                        </div>
+                        <div class="subcomment-actions">
+                            <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                            <span class="like-count">1</span>
+                            <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                            <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                            </button>
+                            <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="subcomment">
+                        <div class="line-container">
+                            <span class="line-dot"></span>
+                        </div>
+                        <div class="subcomment-header">
+                            <img src="https://via.placeholder.com/30" alt="User Avatar">
+                            <span class="subcomment-username">Subcommenter</span>
+                        </div>
+                        <div class="subcomment-content">
+                            This is a subcomment.
+                        </div>
+                        <div class="subcomment-time-date">
+                            <span class="subcomment-time">12:50 PM</span> · <span class="subcomment-date">May 12</span>
+                        </div>
+                        <div class="subcomment-actions">
+                            <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                            <span class="like-count">1</span>
+                            <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                            <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                            </button>
+                            <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="subcomment">
+                        <div class="line-container">
+                            <span class="line-dot"></span>
+                        </div>
+                        <div class="subcomment-header">
+                            <img src="https://via.placeholder.com/30" alt="User Avatar">
+                            <span class="subcomment-username">Subcommenter</span>
+                        </div>
+                        <div class="subcomment-content">
+                            This is a subcomment.
+                        </div>
+                        <div class="subcomment-time-date">
+                            <span class="subcomment-time">12:50 PM</span> · <span class="subcomment-date">May 12</span>
+                        </div>
+                        <div class="subcomment-actions">
+                            <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                            <span class="like-count">1</span>
+                            <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                            <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                            </button>
+                            <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- More subcomments -->
+                </div>
+                <!-- More comments -->
             </div>
-            <!-- More comments -->
+        </div>
+        <div class="tweet-container">
+            <div class="tweet">
+                <div class="tweet-header">
+                    <img src="https://via.placeholder.com/30" alt="User Avatar">
+                    <span class="tweet-username">Username</span>
+                </div>
+                <div class="tweet-content">
+                    This is a tweet content.
+                </div>
+                <div class="tweet-time-date">
+                    <span class="tweet-time">12:34 PM</span> · <span class="tweet-date">May 12</span>
+                </div>
+                <div class="tweet-actions">
+                    <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                    <span class="like-count">5</span>
+                    <button class="comment-button" onclick="toggleComments(this)"><i class="far fa-comment"></i><span
+                            class="comment-count">3</span></button>
+                    <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                    <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                    </button>
+                    <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="comments">
+                <div class="comment">
+                    <div class="line-container">
+                        <span class="line-dot"></span>
+                    </div>
+                    <div class="comment-header">
+                        <img src="https://via.placeholder.com/30" alt="User Avatar">
+                        <span class="comment-username">Commenter</span>
+                    </div>
+                    <div class="comment-content">
+                        This is a comment.
+                    </div>
+                    <div class="comment-time-date">
+                        <span class="comment-time">12:45 PM</span> · <span class="comment-date">May 12</span>
+                    </div>
+                    <div class="comment-actions">
+                        <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                        <span class="like-count">2</span>
+                        <button class="subcomment-button" onclick="toggleSubcomments(this)"><i
+                                class="fas fa-reply"></i><span class="subcomment-count">2</span></button>
+                        <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                        <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                        </button>
+                        <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="subcomments">
+                    <div class="subcomment">
+                        <div class="line-container">
+                            <span class="line-dot"></span>
+                        </div>
+                        <div class="subcomment-header">
+                            <img src="https://via.placeholder.com/30" alt="User Avatar">
+                            <span class="subcomment-username">Subcommenter</span>
+                        </div>
+                        <div class="subcomment-content">
+                            This is a subcomment.
+                        </div>
+                        <div class="subcomment-time-date">
+                            <span class="subcomment-time">12:50 PM</span> · <span class="subcomment-date">May 12</span>
+                        </div>
+                        <div class="subcomment-actions">
+                            <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                            <span class="like-count">1</span>
+                            <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                            <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i>
+                            </button>
+                            <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- More subcomments -->
+                </div>
+                <!-- More comments -->
+            </div>
         </div>
     </div>
-
 
     <div class="user-container" id="userContainer">
         <div class="toggle-btn" onclick="toggleUserInfo()"></div>

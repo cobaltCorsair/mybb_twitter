@@ -31,6 +31,17 @@ body {
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+#mySidebar > * {
+    transition: opacity 0.2s, visibility 0.2s;
+    opacity: 1;
+    visibility: visible;
+}
+
+#mySidebar:not([style*="300px"]) > * {
+    opacity: 0;
+    visibility: hidden;
+}
+
 .openbtn {
     font-size: 20px;
     cursor: pointer;
@@ -319,7 +330,6 @@ body {
 }
 
 .tweet-container {
-    padding: 10px;
     margin: 10px;
     max-width: 400px;
 }
@@ -459,3 +469,19 @@ body {
     z-index: 2;
 }
 
+#tweets-wrapper {
+    overflow-y: auto;
+}
+
+#tweets-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+#tweets-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 4px;
+}
+
+#tweets-wrapper::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
