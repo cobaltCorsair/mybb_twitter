@@ -440,10 +440,10 @@ body {
     top: 0;
     left: -10px;
     width: 2px;
-    height: 50%;
+    height: 100%;
     background-color: var(--border-color);
+    z-index: -1;
 }
-
 
 .comment::after, .subcomment::after {
     content: "";
@@ -455,7 +455,17 @@ body {
     background-color: var(--border-color);
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
+    z-index: -1;
 }
+
+.subcomment:last-child::before {
+        height: 50%;
+}
+
+.comments > .comment:nth-last-of-type(2)::before {
+    height: 50%;
+}
+
 
 .line-dot {
     content: "";
