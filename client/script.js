@@ -31,14 +31,21 @@ socket.on('new tweet', data => {
     `;
     tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
 });
-// Запрашиваем 10 последних сообщений с сервера при загрузке страницы
-socket.emit('get recent messages');
-// Прослушиваем событие 'recent messages' и отображаем сообщения на странице
-socket.on('recent messages', function(messages) {
+
+// ================================
+// TWEET LOADING FUNCTIONS
+// ================================
+let offset = 0;
+const limit = 10;
+const loadRecentMessages = () => {
+    socket.emit('get recent messages', { offset: offset });
+    offset += limit;
+}
+const displayRecentMessages = (messages) => {
+    const tweetsWrapper = document.getElementById('tweets-wrapper');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
     messages.forEach(message => {
-        // Здесь ваш код для отображения каждого сообщения на странице
-        // Например:
-        const tweetsWrapper = document.getElementById('tweets-wrapper');
         const newTweetElement = document.createElement('div');
         newTweetElement.className = 'tweet-container';
         newTweetElement.innerHTML = `
@@ -54,10 +61,20 @@ socket.on('recent messages', function(messages) {
                 <!-- Дополнительный код для кнопок действий и комментариев -->
             </div>
         `;
-        tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
+        tweetsWrapper.appendChild(newTweetElement);
     });
-});
 
+    // Перемещаем кнопку "Загрузить более старые сообщения" в конец контейнера
+    tweetsWrapper.appendChild(loadMoreBtn);
+
+    // Автоматический скролл к последнему добавленному сообщению
+    const lastLoadedTweet = tweetsWrapper.lastChild.previousSibling; // Предыдущий узел перед кнопкой
+    lastLoadedTweet.scrollIntoView({ behavior: 'smooth' });
+}
+const initTweetLoadingEvents = () => {
+    socket.on('recent messages', displayRecentMessages);
+    document.getElementById('load-more-btn').addEventListener('click', loadRecentMessages);
+}
 // ================================
 // UI FUNCTIONS
 // ================================
@@ -146,5 +163,13 @@ const sendTweet = () => {
     socket.emit('create message', { content: tweetContent });
     tweetInput.value = '';
 }
-document.addEventListener("DOMContentLoaded", drawLineBetweenComments);
-document.querySelector(".comments").addEventListener("DOMSubtreeModified", drawLineBetweenComments);
+// ================================
+// EVENT INITIALIZATION
+// ================================
+document.addEventListener("DOMContentLoaded", function() {
+    drawLineBetweenComments();
+    initTweetLoadingEvents();
+    loadRecentMessages();
+
+    document.querySelector(".comments").addEventListener("DOMSubtreeModified", drawLineBetweenComments);
+});

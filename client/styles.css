@@ -427,6 +427,27 @@ body {
     margin-left: 3px;
 }
 
+#load-more-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 3px 1px;
+    border: none;
+    border-radius: 35% 0 35% 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    outline: none;
+    margin: 10px 0;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: var(--font-family);
+}
+
+#load-more-btn:hover {
+    background-color: var(--secondary-color);
+}
+
 /* Lines for comments and subcomments */
 .comments {
     position: relative;
