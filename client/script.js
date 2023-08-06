@@ -1,3 +1,10 @@
+const socket = io.connect('http://localhost:5000'); // Подключение к серверу (предполагая, что сервер работает на порту 5000)
+// Как только устанавливается соединение, отправляем запрос на присоединение к комнате
+socket.on('connect', function() {
+    console.log('Connected to the server');
+    socket.emit('join', { room: 'room' }); // Здесь мы отправляем запрос на присоединение к комнате "room"
+});
+
 function toggleNav() {
     var sidebar = document.getElementById("mySidebar");
     var button = document.querySelector(".openbtn");
@@ -14,13 +21,6 @@ function toggleNav() {
         userContainer.classList.remove("closed");
         blockedUsersButton.style.display = "flex";
     }
-}
-
-function createTweet() {
-    var tweetInput = document.getElementById("tweetInput");
-    console.log('Tweet:', tweetInput.value);
-    tweetInput.value = '';
-    updateCounter();
 }
 
 function updateCounter() {
@@ -121,3 +121,44 @@ function drawLineBetweenComments() {
 // Вызываем функцию при загрузке страницы и при любых изменениях в блоке comments
 document.addEventListener("DOMContentLoaded", drawLineBetweenComments);
 document.querySelector(".comments").addEventListener("DOMSubtreeModified", drawLineBetweenComments);
+
+function sendTweet() {
+    const tweetInput = document.getElementById("tweetInput");
+    console.log('Tweet:', tweetInput.value);
+    const tweetContent = tweetInput.value;
+
+    // Отправка твита на сервер
+    socket.emit('create message', { content: tweetContent });
+
+    // Очистка поля ввода после отправки
+    tweetInput.value = '';
+}
+
+socket.on('new tweet', function(data) {
+    console.log("Received new tweet event:", data);
+
+    const tweetsWrapper = document.getElementById('tweets-wrapper');
+    const newTweetElement = document.createElement('div');
+    newTweetElement.className = 'tweet-container';
+    newTweetElement.innerHTML = `
+        <div class="tweet">
+            <div class="tweet-header">
+                <img src="${data.avatar_url}" alt="User Avatar">
+                <span class="tweet-username">${data.username}</span>
+            </div>
+            <div class="tweet-content">${data.content}</div>
+            <div class="tweet-time-date">
+                <span class="tweet-time">Текущее время</span> · <span class="tweet-date">Текущая дата</span>
+            </div>
+            <div class="tweet-actions">
+                <!-- Здесь можно добавить дополнительные кнопки действий для твита -->
+            </div>
+        </div>
+        <div class="comments">
+            <!-- Здесь можно добавить комментарии к твиту -->
+        </div>
+    `;
+    tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
+});
+
+

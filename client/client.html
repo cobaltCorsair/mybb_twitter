@@ -4,6 +4,7 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 
 <body>
@@ -369,7 +370,7 @@
                 <span id="username">Username</span>
                 <textarea id="tweetInput" placeholder="Enter your tweet" onkeyup="updateCounter()"></textarea>
                 <div class="tweet-counter" id="tweetCounter">0/500</div>
-                <button onclick="createTweet()">Tweet</button>
+                <button onclick="sendTweet()">Tweet</button>
             </div>
         </div>
 

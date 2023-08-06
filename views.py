@@ -62,6 +62,11 @@ class CreateMessageView(BaseView):
         print('Received message:', data)
         return self.handle_create_message(data)
 
+    @socketio.on('new tweet')
+    def handle_new_tweet_socket(self, data):
+        # Этот метод может оставаться пустым, так как он используется только для регистрации события
+        pass
+
     def handle_create_message(self, data):
         user_id: int = data.get('user_id')
         username: str = data.get('username')
@@ -81,7 +86,9 @@ class CreateMessageView(BaseView):
 
         print('Emitting message:', data)
         data['message_id'] = message_id
-        self.socketio.emit('create message', data, room='room')
+        print('Preparing to emit tweet:', data)
+        self.socketio.emit('new tweet', data, room='room')
+        print('Tweet emitted:', data)
         return jsonify({"message": f"Message has been created for user {username}.", "message_id": message_id}), 201
 
 

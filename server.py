@@ -41,6 +41,7 @@ view_classes = [
 event_handlers = {
     'new user': 'handle_new_user',
     'create message': 'handle_create_message_socket',
+    'new tweet': 'handle_new_tweet_socket',
     'delete message': 'handle_delete_message_socket',
     'update message': 'handle_update_message_socket',
     'create comment': 'handle_create_comment_socket',
