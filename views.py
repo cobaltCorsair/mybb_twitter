@@ -543,9 +543,10 @@ class GetRecentMessagesView(BaseView):
         return self.handle_get_recent_messages(offset)
 
     def handle_get_recent_messages(self, offset=0):
-        recent_messages_dicts = user_service.get_recent_messages(offset=offset)
+        response_data = user_service.get_recent_messages(offset=offset)
+        recent_messages_dicts = response_data['messages']
         print(f"Emitting 'recent messages' event to client with data (offset {offset}):", recent_messages_dicts)
-        self.socketio.emit('recent messages', recent_messages_dicts, room='room')
+        self.socketio.emit('recent messages', response_data, room='room')
         return jsonify({"recent_messages": [message['id'] for message in recent_messages_dicts]}), 200
 
 

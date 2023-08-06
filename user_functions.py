@@ -209,8 +209,12 @@ class UserService:
     def get_top_users(self) -> list:
         return list(User.objects.order_by('-message', '-comment', '-likes'))
 
-    def get_recent_messages(self, offset=0, limit=10) -> list:
-        recent_messages_objects = list(Message.objects.order_by('-created_at').skip(offset).limit(limit))
+    def get_recent_messages(self, offset=0, limit=10) -> dict:
+        recent_messages_objects = list(Message.objects.order_by('-created_at').skip(offset).limit(limit + 1))
+
+        has_more_messages = len(recent_messages_objects) > limit
+        if has_more_messages:
+            recent_messages_objects = recent_messages_objects[:-1]
 
         def message_to_dict(message):
             return {
@@ -219,7 +223,10 @@ class UserService:
                 # добавьте здесь другие поля, которые вы хотите отправить
             }
 
-        return [message_to_dict(message) for message in recent_messages_objects]
+        return {
+            'messages': [message_to_dict(message) for message in recent_messages_objects],
+            'hasMoreMessages': has_more_messages
+        }
 
     def send_notification(self, user_id: int, text: str) -> None:
         try:

@@ -41,11 +41,11 @@ const loadRecentMessages = () => {
     socket.emit('get recent messages', { offset: offset });
     offset += limit;
 }
-const displayRecentMessages = (messages) => {
+const displayRecentMessages = (data) => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const loadMoreBtn = document.getElementById('load-more-btn');
 
-    messages.forEach(message => {
+    data.messages.forEach(message => {
         const newTweetElement = document.createElement('div');
         newTweetElement.className = 'tweet-container';
         newTweetElement.innerHTML = `
@@ -66,6 +66,12 @@ const displayRecentMessages = (messages) => {
 
     // Перемещаем кнопку "Загрузить более старые сообщения" в конец контейнера
     tweetsWrapper.appendChild(loadMoreBtn);
+
+    // Если больше нет сообщений для загрузки, деактивируем кнопку
+    if (!data.hasMoreMessages) {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerText = "Больше сообщений нет";
+    }
 
     // Автоматический скролл к последнему добавленному сообщению
     const lastLoadedTweet = tweetsWrapper.lastChild.previousSibling; // Предыдущий узел перед кнопкой
