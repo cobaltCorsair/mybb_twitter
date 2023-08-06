@@ -31,6 +31,32 @@ socket.on('new tweet', data => {
     `;
     tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
 });
+// Запрашиваем 10 последних сообщений с сервера при загрузке страницы
+socket.emit('get recent messages');
+// Прослушиваем событие 'recent messages' и отображаем сообщения на странице
+socket.on('recent messages', function(messages) {
+    messages.forEach(message => {
+        // Здесь ваш код для отображения каждого сообщения на странице
+        // Например:
+        const tweetsWrapper = document.getElementById('tweets-wrapper');
+        const newTweetElement = document.createElement('div');
+        newTweetElement.className = 'tweet-container';
+        newTweetElement.innerHTML = `
+            <div class="tweet">
+                <div class="tweet-header">
+                    <img src="${message.avatar_url}" alt="User Avatar">
+                    <span class="tweet-username">${message.username}</span>
+                </div>
+                <div class="tweet-content">${message.content}</div>
+                <div class="tweet-time-date">
+                    <span class="tweet-time">Текущее время</span> · <span class="tweet-date">Текущая дата</span>
+                </div>
+                <!-- Дополнительный код для кнопок действий и комментариев -->
+            </div>
+        `;
+        tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
+    });
+});
 
 // ================================
 // UI FUNCTIONS

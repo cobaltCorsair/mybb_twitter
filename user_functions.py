@@ -210,7 +210,15 @@ class UserService:
         return list(User.objects.order_by('-message', '-comment', '-likes'))
 
     def get_recent_messages(self) -> list:
-        return list(Message.objects.order_by('-created_at'))
+        recent_messages_objects = list(Message.objects.order_by('-created_at'))
+
+        def message_to_dict(message):
+            return {
+                'id': str(message.id),
+                'content': message.content,
+            }
+
+        return [message_to_dict(message) for message in recent_messages_objects]
 
     def send_notification(self, user_id: int, text: str) -> None:
         try:

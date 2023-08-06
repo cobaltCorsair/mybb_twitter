@@ -541,8 +541,9 @@ class GetRecentMessagesView(BaseView):
         return self.handle_get_recent_messages()
 
     def handle_get_recent_messages(self):
-        recent_messages = user_service.get_recent_messages()
-        return jsonify({"recent_messages": [str(message.id) for message in recent_messages]}), 200
+        recent_messages_dicts = user_service.get_recent_messages()
+        self.socketio.emit('recent messages', recent_messages_dicts, room='room')
+        return jsonify({"recent_messages": [message['id'] for message in recent_messages_dicts]}), 200
 
 
 class SendNotificationView(BaseView):
