@@ -2,53 +2,32 @@
 // CONSTANTS AND GLOBAL VARIABLES
 // ================================
 const socket = io.connect('http://localhost:5000');
-
 // ================================
 // SOCKET CONNECTION HANDLERS
 // ================================
 socket.on('connect', () => {
     console.log('Connected to the server');
-    socket.emit('join', { room: 'room' });
+    socket.emit('join', {room: 'room'});
 });
 socket.on('new tweet', data => {
     console.log("Received new tweet event:", data);
-    const tweetsWrapper = document.getElementById('tweets-wrapper');
-    const newTweetElement = document.createElement('div');
-    newTweetElement.className = 'tweet-container';
-    newTweetElement.innerHTML = `
-        <div class="tweet">
-            <div class="tweet-header">
-                <img src="${data.avatar_url}" alt="User Avatar">
-                <span class="tweet-username">${data.username}</span>
-            </div>
-            <div class="tweet-content">${data.content}</div>
-            <div class="tweet-time-date">
-                <span class="tweet-time">Текущее время</span> · <span class="tweet-date">Текущая дата</span>
-            </div>
-            <div class="tweet-actions"></div>
-        </div>
-        <div class="comments"></div>
-    `;
-    tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild);
+    displayRecentMessages({messages: [data], hasMoreMessages: true});
+    removeExtraTweets();
 });
-
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
 let offset = 0;
 const limit = 10;
-const loadRecentMessages = () => {
-    socket.emit('get recent messages', { offset: offset });
-    offset += limit;
-}
-const displayRecentMessages = (data) => {
-    const tweetsWrapper = document.getElementById('tweets-wrapper');
-    const loadMoreBtn = document.getElementById('load-more-btn');
-
-    data.messages.forEach(message => {
-        const newTweetElement = document.createElement('div');
-        newTweetElement.className = 'tweet-container';
-        newTweetElement.innerHTML = `
+let loadingOlderTweets = false;
+const MAX_TWEETS_ON_PAGE = 15;
+let userSentTweet = false;
+const isWrapperAtBottom = (wrapper) => {
+    return wrapper.scrollTop + wrapper.clientHeight === wrapper.scrollHeight;
+};
+const generateTweetHTML = (message) => {
+    return `
+        <div class="tweet-container">
             <div class="tweet">
                 <div class="tweet-header">
                     <img src="${message.avatar_url}" alt="User Avatar">
@@ -60,27 +39,60 @@ const displayRecentMessages = (data) => {
                 </div>
                 <!-- Дополнительный код для кнопок действий и комментариев -->
             </div>
-        `;
-        tweetsWrapper.appendChild(newTweetElement);
+        </div>
+    `;
+};
+const removeExcessTweets = () => {
+    const tweetsWrapper = document.getElementById('tweets-wrapper');
+    const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
+    while (tweets.length > MAX_TWEETS_ON_PAGE) {
+        tweets[0].remove();
+    }
+};
+const loadRecentMessages = () => {
+    loadingOlderTweets = true;
+    socket.emit('get recent messages', {offset: offset});
+    offset += limit;
+};
+const displayRecentMessages = (data) => {
+    const tweetsWrapper = document.getElementById('tweets-wrapper');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    const wasAtBottom = isWrapperAtBottom(tweetsWrapper);
+
+    data.messages.forEach(message => {
+        const tweetHTML = generateTweetHTML(message);
+        const newTweetElement = document.createElement('div');
+        newTweetElement.innerHTML = tweetHTML;
+
+        if (loadingOlderTweets) {
+            tweetsWrapper.insertBefore(newTweetElement, loadMoreBtn); // Старые сообщения вставляем перед кнопкой
+        } else {
+            tweetsWrapper.appendChild(newTweetElement); // Новые сообщения вставляем в конец
+        }
     });
 
-    // Перемещаем кнопку "Загрузить более старые сообщения" в конец контейнера
-    tweetsWrapper.appendChild(loadMoreBtn);
-
-    // Если больше нет сообщений для загрузки, деактивируем кнопку
-    if (!data.hasMoreMessages) {
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.innerText = "Больше сообщений нет";
+    if (!loadingOlderTweets) {
+        removeExcessTweets();
+        if (wasAtBottom || userSentTweet) {  // Если пользователь был внизу или отправил твит
+            tweetsWrapper.scrollTop = tweetsWrapper.scrollHeight;
+            userSentTweet = false;  // Сбрасываем флаг
+        }
     }
 
-    // Автоматический скролл к последнему добавленному сообщению
-    const lastLoadedTweet = tweetsWrapper.lastChild.previousSibling; // Предыдущий узел перед кнопкой
-    lastLoadedTweet.scrollIntoView({ behavior: 'smooth' });
-}
+
+    if (!data.hasMoreMessages) {
+        loadMoreBtn.style.display = 'none';
+    } else {
+        loadMoreBtn.style.display = '';
+    }
+
+    loadingOlderTweets = false;
+};
 const initTweetLoadingEvents = () => {
     socket.on('recent messages', displayRecentMessages);
     document.getElementById('load-more-btn').addEventListener('click', loadRecentMessages);
-}
+};
 // ================================
 // UI FUNCTIONS
 // ================================
@@ -166,13 +178,14 @@ const drawLineBetweenComments = () => {
 const sendTweet = () => {
     const tweetInput = document.getElementById("tweetInput");
     const tweetContent = tweetInput.value;
-    socket.emit('create message', { content: tweetContent });
+    socket.emit('create message', {content: tweetContent});
     tweetInput.value = '';
+    userSentTweet = true;  // Устанавливаем флаг в true при отправке твита
 }
 // ================================
 // EVENT INITIALIZATION
 // ================================
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     drawLineBetweenComments();
     initTweetLoadingEvents();
     loadRecentMessages();
