@@ -46,7 +46,7 @@ const removeExcessTweets = () => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
     while (tweets.length > MAX_TWEETS_ON_PAGE) {
-        tweets[0].remove();
+        tweets[tweets.length - 1].remove(); // удаляем последний элемент
     }
 };
 const loadRecentMessages = () => {
@@ -56,7 +56,6 @@ const loadRecentMessages = () => {
 };
 const displayRecentMessages = (data) => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
-    const loadMoreBtn = document.getElementById('load-more-btn');
 
     const wasAtBottom = isWrapperAtBottom(tweetsWrapper);
 
@@ -66,21 +65,23 @@ const displayRecentMessages = (data) => {
         newTweetElement.innerHTML = tweetHTML;
 
         if (loadingOlderTweets) {
-            tweetsWrapper.insertBefore(newTweetElement, loadMoreBtn); // Старые сообщения вставляем перед кнопкой
+            tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.lastChild); // Старые сообщения вставляем в начало
         } else {
-            tweetsWrapper.appendChild(newTweetElement); // Новые сообщения вставляем в конец
+            tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild); // Новые сообщения вставляем в самом верху
         }
     });
 
     if (!loadingOlderTweets) {
         removeExcessTweets();
-        if (wasAtBottom || userSentTweet) {  // Если пользователь был внизу или отправил твит
-            tweetsWrapper.scrollTop = tweetsWrapper.scrollHeight;
-            userSentTweet = false;  // Сбрасываем флаг
+        if (userSentTweet) { // Если это новое сообщение от текущего пользователя
+            tweetsWrapper.scrollTop = 0; // Прокрутка в самый верх
+            userSentTweet = false;
         }
+    } else if (wasAtBottom) {
+        tweetsWrapper.scrollTop = tweetsWrapper.scrollHeight;
     }
 
-
+    const loadMoreBtn = document.getElementById('load-more-btn');
     if (!data.hasMoreMessages) {
         loadMoreBtn.style.display = 'none';
     } else {
