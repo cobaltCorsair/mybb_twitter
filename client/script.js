@@ -35,7 +35,7 @@ const generateTweetHTML = (message) => {
                 </div>
                 <div class="tweet-content">${message.content}</div>
                 <div class="tweet-time-date">
-                    <span class="tweet-time">Текущее время</span> · <span class="tweet-date">Текущая дата</span>
+                    <span class="tweet-time">${message.created_at}</span>
                 </div>
                 <!-- Дополнительный код для кнопок действий и комментариев -->
             </div>

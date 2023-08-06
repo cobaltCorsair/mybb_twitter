@@ -1,9 +1,10 @@
 from typing import Optional
 
 from mongoengine import DoesNotExist
-
+from mongoengine.queryset.visitor import Q
 from admins import ADMIN_IDS
 from models import User, Message, Comment, Like, Report, Notification, SubComment
+from message_manager import MessageManager
 
 
 class UserService:
@@ -216,15 +217,8 @@ class UserService:
         if has_more_messages:
             recent_messages_objects = recent_messages_objects[:-1]
 
-        def message_to_dict(message):
-            return {
-                'id': str(message.id),
-                'content': message.content,
-                # добавьте здесь другие поля, которые вы хотите отправить
-            }
-
         return {
-            'messages': [message_to_dict(message) for message in recent_messages_objects],
+            'messages': [MessageManager.message_to_dict(message) for message in recent_messages_objects],
             'hasMoreMessages': has_more_messages
         }
 

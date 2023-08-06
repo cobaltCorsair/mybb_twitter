@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_mongoengine import MongoEngine
 from mongoengine import StringField, IntField, DateTimeField, ListField, ReferenceField, CASCADE, BooleanField, \
     EmbeddedDocument, EmbeddedDocumentField
@@ -32,7 +34,7 @@ class Message(db.Document):
     """
     user = ReferenceField(User, reverse_delete_rule=CASCADE)
     content = StringField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
     likes = ListField(EmbeddedDocumentField(Like))
 
 
@@ -43,7 +45,7 @@ class Comment(db.Document):
     user = ReferenceField(User, reverse_delete_rule=CASCADE)
     message = ReferenceField(Message, reverse_delete_rule=CASCADE)
     content = StringField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
     likes = ListField(EmbeddedDocumentField(Like))
 
 
@@ -54,7 +56,7 @@ class SubComment(db.Document):
     user = ReferenceField(User, reverse_delete_rule=CASCADE)
     parent_comment = ReferenceField(Comment, reverse_delete_rule=CASCADE)
     content = StringField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
     likes = ListField(EmbeddedDocumentField(Like))
 
 
@@ -66,7 +68,7 @@ class Report(db.Document):
     message = ReferenceField(Message, reverse_delete_rule=CASCADE)
     comment = ReferenceField(Comment, reverse_delete_rule=CASCADE)
     reason = StringField()
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
 
 
 class Notification(db.Document):
@@ -76,4 +78,4 @@ class Notification(db.Document):
     user = ReferenceField(User, reverse_delete_rule=CASCADE)
     text = StringField()
     read = BooleanField(default=False)
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
