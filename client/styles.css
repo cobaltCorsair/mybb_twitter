@@ -1,3 +1,4 @@
+/* === Глобальные стили и переменные === */
 :root {
     --primary-color: #1da1f2;
     --secondary-color: #1991d6;
@@ -8,6 +9,7 @@
     --border-color: #e6e6e6;
     --font-family: "Lato", sans-serif;
     --font-size: 12px;
+    --line-height: 0%;
 }
 
 body {
@@ -15,6 +17,9 @@ body {
     background-color: var(--bg-color);
 }
 
+/* === Компоненты и их модификации === */
+
+/* Sidebar */
 #mySidebar {
     height: 100%;
     width: 0;
@@ -63,6 +68,7 @@ body {
     background-color: var(--secondary-color);
 }
 
+/* User container */
 .user-container {
     position: relative;
     margin-top: auto;
@@ -169,6 +175,7 @@ body {
     display: none;
 }
 
+/* Notifications */
 .notification-bell {
     position: absolute;
     top: 10px;
@@ -259,6 +266,7 @@ body {
     color: #555;
 }
 
+/* Blocked Users */
 .blocked-users {
     position: absolute;
     top: 10px;
@@ -324,11 +332,12 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* Устанавливаем максимальную ширину для никнейма */
+    max-width: 150px;
     flex-grow: 1;
     color: var(--text-color);
 }
 
+/* Tweets */
 .tweet-container {
     margin: 10px;
     max-width: 400px;
@@ -347,7 +356,7 @@ body {
 }
 
 .subcomments {
-    margin-left: 40px; /* Добавляем больший отступ слева для подкомментариев */
+    margin-left: 40px;
     display: none;
 }
 
@@ -418,15 +427,9 @@ body {
     margin-left: 3px;
 }
 
-
-@media only screen and (max-width: 600px) {
-    #mySidebar {
-        width: 100%;
-    }
-
-    .openbtn {
-        right: 0;
-    }
+/* Lines for comments and subcomments */
+.comments {
+    position: relative;
 }
 
 .comment, .subcomment {
@@ -439,7 +442,7 @@ body {
     position: absolute;
     top: 0;
     left: -10px;
-    width: 2px;
+    width: 1px;
     height: 100%;
     background-color: var(--border-color);
     z-index: -1;
@@ -450,22 +453,39 @@ body {
     position: absolute;
     top: 50%;
     left: -10px;
-    width: 8px;
-    height: 2px;
+    width: 9px;
     background-color: var(--border-color);
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     z-index: -1;
 }
 
+.comment::after {
+    height: 2px;
+}
+
+.subcomment::after {
+    height: 1px;
+}
+
 .subcomment:last-child::before {
-        height: 50%;
+    height: 50%;
 }
 
 .comments > .comment:nth-last-of-type(2)::before {
     height: 50%;
 }
 
+.comments::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 2px;
+    height: var(--line-height);
+    background-color: var(--border-color);
+    z-index: -1;
+}
 
 .line-dot {
     content: "";
@@ -481,6 +501,7 @@ body {
 
 #tweets-wrapper {
     overflow-y: auto;
+    padding-bottom: 20px;
 }
 
 #tweets-wrapper::-webkit-scrollbar {
@@ -494,4 +515,15 @@ body {
 
 #tweets-wrapper::-webkit-scrollbar-track {
     background-color: #f1f1f1;
+}
+
+/* === Медиа-запросы === */
+@media only screen and (max-width: 600px) {
+    #mySidebar {
+        width: 100%;
+    }
+
+    .openbtn {
+        right: 0;
+    }
 }

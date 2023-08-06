@@ -74,11 +74,13 @@ function unblockUser(username) {
 function toggleComments(button) {
     const commentsSection = button.closest('.tweet').nextElementSibling;
     commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+    drawLineBetweenComments();
 }
 
 function toggleSubcomments(button) {
     const subcommentsSection = button.closest('.comment').nextElementSibling;
     subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
+    drawLineBetweenComments();
 }
 
 function toggleLike(button) {
@@ -96,3 +98,26 @@ function confirmBlacklist(button) {
         addToBlacklist(button);
     }
 }
+
+function drawLineBetweenComments() {
+    const commentsBlock = document.querySelector(".comments");
+    if (!commentsBlock) return;
+
+    const comments = commentsBlock.querySelectorAll(".comment");
+    if (comments.length === 0) return;
+
+    const firstComment = comments[0];
+    const lastComment = comments[comments.length - 1];
+
+    const topPosition = firstComment.offsetTop;
+    const bottomPosition = lastComment.offsetTop + (lastComment.offsetHeight / 2);
+
+    const lineHeight = bottomPosition - topPosition;
+
+    // Добавляем стиль для блока comments, создавая псевдоэлемент ::before с нужной высотой
+    commentsBlock.style.setProperty("--line-height", `${lineHeight}px`);
+}
+
+// Вызываем функцию при загрузке страницы и при любых изменениях в блоке comments
+document.addEventListener("DOMContentLoaded", drawLineBetweenComments);
+document.querySelector(".comments").addEventListener("DOMSubtreeModified", drawLineBetweenComments);
