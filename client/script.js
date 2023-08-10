@@ -37,11 +37,20 @@ const generateTweetHTML = (message) => {
                 <div class="tweet-time-date">
                     <span class="tweet-time">${message.created_at}</span>
                 </div>
-                <!-- Дополнительный код для кнопок действий и комментариев -->
+                <div class="tweet-actions">
+                    <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                    <span class="like-count">0</span>
+                    <button class="comment-button" onclick="toggleComments(this)"><i class="far fa-comment"></i></button>
+                    <span class="comment-count">0</span>
+                    <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                    <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i></button>
+                    <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i></button>
+                </div>
             </div>
         </div>
     `;
 };
+
 const removeExcessTweets = () => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
@@ -183,6 +192,9 @@ const sendTweet = () => {
     tweetInput.value = '';
     userSentTweet = true;  // Устанавливаем флаг в true при отправке твита
 }
+const editTweet = (button) => {
+    // ! TODO: Функция редактирования твита.
+};
 // ================================
 // EVENT INITIALIZATION
 // ================================
