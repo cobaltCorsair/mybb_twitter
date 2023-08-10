@@ -40,6 +40,7 @@ const generateTweetHTML = (message) => {
                 <div class="tweet-actions">
                     <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
                     <span class="like-count">0</span>
+                    <button class="reply-button" onclick="displayReplyForm(this)"><i class="fas fa-pencil-alt"></i></button>
                     <button class="comment-button" onclick="toggleComments(this)"><i class="far fa-comment"></i></button>
                     <span class="comment-count">0</span>
                     <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
@@ -50,7 +51,6 @@ const generateTweetHTML = (message) => {
         </div>
     `;
 };
-
 const removeExcessTweets = () => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
@@ -194,6 +194,46 @@ const sendTweet = () => {
 }
 const editTweet = (button) => {
     // ! TODO: Функция редактирования твита.
+};
+const displayReplyForm = (button) => {
+    const parentElement = button.closest(".tweet") || button.closest(".comment");
+    const replyForm = document.createElement('div');
+    replyForm.className = 'reply-form-container';
+    replyForm.innerHTML = `
+    <div class="reply-input-container">
+        <textarea class="reply-textarea" placeholder="Напишите ваш комментарий..."></textarea>
+        <div class="reply-actions">
+            <span class="reply-counter">0/500</span>
+            <button class="reply-button" onclick="addComment(this)">Отправить</button>
+        </div>
+    </div>
+`;
+    // Проверим, есть ли уже форма для ответа, и, если да, то удалим её
+    const existingForm = parentElement.parentNode.querySelector('.reply-form-container');
+    if (existingForm) {
+        existingForm.remove();
+    } else {
+        parentElement.parentNode.insertBefore(replyForm, parentElement.nextSibling);
+    }
+};
+const addComment = (button) => {
+    const textarea = button.parentElement.querySelector('.reply-textarea');
+    const commentContent = textarea.value;
+    if (commentContent.trim() === '') {
+        alert("Комментарий не может быть пустым!");
+        return;
+    }
+    const commentData = {
+        content: commentContent,
+        username: "Ваше имя пользователя",  // замените на реальное имя пользователя
+        avatar_url: "URL вашего аватара",  // замените на реальный URL аватара
+        created_at: "только что"
+    };
+    const newCommentHTML = generateTweetHTML(commentData);
+    const newCommentElement = document.createElement('div');
+    newCommentElement.innerHTML = newCommentHTML;
+    button.closest('.tweet-container').appendChild(newCommentElement);
+    textarea.value = '';
 };
 // ================================
 // EVENT INITIALIZATION

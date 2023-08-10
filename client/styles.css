@@ -403,19 +403,19 @@ body {
     display: none;
 }
 
-.like-button, .comment-button, .subcomment-button, .edit-button, .delete-button, .blacklist-button {
+.like-button, .comment-button, .subcomment-button, .edit-button, .delete-button, .blacklist-button, .reply-button {
     cursor: pointer;
     background: none;
     border: none;
     color: #657786;
-    font-size: 16px;
-    padding: 5px;
+    font-size: 14px;
+    padding: 2px;
     display: flex;
     align-items: center;
     margin-left: 10px;
 }
 
-.like-button:hover, .comment-button:hover, .subcomment-button:hover, .edit-button:hover, .delete-button:hover, .blacklist-button:hover {
+.like-button:hover, .comment-button:hover, .subcomment-button:hover, .edit-button:hover, .delete-button:hover, .blacklist-button:hover, .reply-button:hover  {
     color: var(--primary-color);
 }
 
@@ -447,6 +447,44 @@ body {
 #load-more-btn:hover {
     background-color: var(--secondary-color);
 }
+
+/* Styles for reply form */
+.reply-input-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #f6f8fa;
+}
+
+.reply-textarea {
+    border: none;
+    border-radius: 4px;
+    padding-left: 5px;
+    resize: vertical;
+    font-size: 14px;
+    line-height: 1.5;
+    width: 98%;
+    min-height: 80px;
+}
+
+.reply-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.reply-counter {
+    font-size: 12px;
+    color: #586069;
+}
+.subcomments .reply-button {
+    display: none;
+}
+
 
 /* Lines for comments and subcomments */
 .comments {
