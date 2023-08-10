@@ -153,15 +153,21 @@ const unblockUser = username => {
     if (userToUnblock) userToUnblock.remove();
 }
 const toggleComments = button => {
-    const commentsSection = button.closest('.tweet').nextElementSibling;
+    let commentsSection = button.closest('.tweet').nextElementSibling;
+    if (commentsSection && commentsSection.classList.contains('reply-form-container')) {
+        commentsSection = commentsSection.nextElementSibling;
+    }
     commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
     drawLineBetweenComments();
-}
+};
 const toggleSubcomments = button => {
-    const subcommentsSection = button.closest('.comment').nextElementSibling;
+    let subcommentsSection = button.closest('.comment').nextElementSibling;
+    if (subcommentsSection && subcommentsSection.classList.contains('reply-form-container')) {
+        subcommentsSection = subcommentsSection.nextElementSibling;
+    }
     subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
     drawLineBetweenComments();
-}
+};
 const toggleLike = button => button.classList.toggle('liked');
 const confirmAndExecute = (message, action, button) => {
     if (confirm(message)) {
@@ -197,6 +203,20 @@ const editTweet = (button) => {
 };
 const displayReplyForm = (button) => {
     const parentElement = button.closest(".tweet") || button.closest(".comment");
+    const parentContainer = parentElement.parentNode;
+
+    // Удалим все открытые формы для ответа на странице, кроме той, что привязана к текущей кнопке
+    const allOpenReplyForms = document.querySelectorAll('.reply-form-container');
+    allOpenReplyForms.forEach(form => {
+        if (form !== parentElement.nextElementSibling) form.remove();
+    });
+
+    // Если форма ответа уже открыта для этого элемента, закройте ее
+    if (parentElement.nextElementSibling && parentElement.nextElementSibling.classList.contains('reply-form-container')) {
+        parentElement.nextElementSibling.remove();
+        return;  // Выходим из функции, так как нам не нужно создавать новую форму
+    }
+
     const replyForm = document.createElement('div');
     replyForm.className = 'reply-form-container';
     replyForm.innerHTML = `
@@ -208,13 +228,7 @@ const displayReplyForm = (button) => {
         </div>
     </div>
 `;
-    // Проверим, есть ли уже форма для ответа, и, если да, то удалим её
-    const existingForm = parentElement.parentNode.querySelector('.reply-form-container');
-    if (existingForm) {
-        existingForm.remove();
-    } else {
-        parentElement.parentNode.insertBefore(replyForm, parentElement.nextSibling);
-    }
+    parentContainer.insertBefore(replyForm, parentElement.nextSibling);
 };
 const addComment = (button) => {
     const textarea = button.parentElement.querySelector('.reply-textarea');
