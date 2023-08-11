@@ -158,7 +158,6 @@ const toggleComments = button => {
         commentsSection = commentsSection.nextElementSibling;
     }
     commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
-    drawLineBetweenComments();
 };
 const toggleSubcomments = button => {
     let subcommentsSection = button.closest('.comment').nextElementSibling;
@@ -166,7 +165,6 @@ const toggleSubcomments = button => {
         subcommentsSection = subcommentsSection.nextElementSibling;
     }
     subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
-    drawLineBetweenComments();
 };
 const toggleLike = button => button.classList.toggle('liked');
 const confirmAndExecute = (message, action, button) => {
@@ -176,25 +174,6 @@ const confirmAndExecute = (message, action, button) => {
 }
 const confirmDelete = button => confirmAndExecute('Вы уверены, что хотите удалить этот элемент?', deleteTweet, button);
 const confirmBlacklist = button => confirmAndExecute('Вы уверены, что хотите добавить этого пользователя в черный список?', addToBlacklist, button);
-const drawLineBetweenComments = () => {
-    const tweets = document.querySelectorAll(".tweet-container");
-
-    tweets.forEach(tweet => {
-        const commentsBlock = tweet.querySelector(".comments");
-        if (!commentsBlock) return;
-
-        const comments = [...commentsBlock.querySelectorAll(".comment")];
-        if (comments.length === 0) return;
-
-        const [firstComment, lastComment] = [comments[0], comments[comments.length - 1]];
-
-        const topPosition = firstComment.offsetTop;
-        const bottomPosition = lastComment.offsetTop + (lastComment.offsetHeight / 2);
-
-        const lineHeight = bottomPosition - topPosition;
-        commentsBlock.style.setProperty("--line-height", `${lineHeight}px`);
-    });
-}
 const sendTweet = () => {
     const tweetInput = document.getElementById("tweetInput");
     const tweetContent = tweetInput.value;
@@ -257,9 +236,6 @@ const addComment = (button) => {
 // EVENT INITIALIZATION
 // ================================
 document.addEventListener("DOMContentLoaded", function () {
-    drawLineBetweenComments();
     initTweetLoadingEvents();
     loadRecentMessages();
-
-    document.querySelector(".comments").addEventListener("DOMSubtreeModified", drawLineBetweenComments);
 });

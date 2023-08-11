@@ -481,81 +481,9 @@ body {
     font-size: 12px;
     color: #586069;
 }
+
 .subcomments .reply-button {
     display: none;
-}
-
-
-/* Lines for comments and subcomments */
-.comments {
-    position: relative;
-}
-
-.comment, .subcomment {
-    position: relative;
-    padding-left: 20px;
-}
-
-.comment::before, .subcomment::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -10px;
-    width: 1px;
-    height: 100%;
-    background-color: var(--border-color);
-    z-index: -1;
-}
-
-.comment::after, .subcomment::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -10px;
-    width: 9px;
-    background-color: var(--border-color);
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    z-index: -1;
-}
-
-.comment::after {
-    height: 2px;
-}
-
-.subcomment::after {
-    height: 1px;
-}
-
-.subcomment:last-child::before {
-    height: 50%;
-}
-
-.comments > .comment:nth-last-of-type(2)::before {
-    height: 50%;
-}
-
-.comments::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -10px;
-    width: 2px;
-    height: var(--line-height);
-    background-color: var(--border-color);
-    z-index: -1;
-}
-
-.line-dot {
-    content: "";
-    position: absolute;
-    top: -6px;
-    left: -12px;
-    width: 6px;
-    height: 6px;
-    background-color: var(--border-color);
-    border-radius: 50%;
-    z-index: 2;
 }
 
 #tweets-wrapper {
