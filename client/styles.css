@@ -485,6 +485,51 @@ body {
 .subcomments .reply-button {
     display: none;
 }
+/* Lines */
+.comment::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    height: 100%;
+    width: 2px;
+    background-color: var(--border-color);
+}
+
+.subcomment::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    height: 100%;
+    width: 1px;
+    background-color: var(--border-color);
+}
+
+.comment::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    width: 10px;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.reply-form-container::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    width: 10px;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.comment, .subcomment {
+    padding-left: 20px;
+    position: relative;
+}
 
 #tweets-wrapper {
     overflow-y: auto;
