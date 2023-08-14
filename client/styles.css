@@ -485,6 +485,48 @@ body {
 .subcomments .reply-button {
     display: none;
 }
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 5px;
+    background-color: var(--bg-color);
+}
+
+.edit-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: var(--light-bg-color);
+    color: var(--text-color);
+    resize: vertical;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.edit-actions button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.edit-actions button:hover {
+    background-color: var(--secondary-color);
+}
+
 /* Lines */
 .comment::before {
     content: "";

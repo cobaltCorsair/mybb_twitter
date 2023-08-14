@@ -182,8 +182,36 @@ const sendTweet = () => {
     userSentTweet = true;  // Устанавливаем флаг в true при отправке твита
 }
 const editTweet = (button) => {
-    // ! TODO: Функция редактирования твита.
+    const parentElement = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
+    const contentElement = parentElement.querySelector(".tweet-content");
+    const currentContent = contentElement.textContent.trim();
+
+    const editForm = `
+        <div class="edit-form">
+            <textarea class="edit-textarea">${currentContent}</textarea>
+            <div class="edit-actions">
+                <button onclick="saveEdit(this)">Сохранить</button>
+                <button onclick="cancelEdit(this)">Отменить</button>
+            </div>
+        </div>
+    `;
+
+    // Сохраним оригинальное содержимое, чтобы можно было восстановить его при отмене
+    contentElement.setAttribute('data-original-content', currentContent);
+
+    contentElement.innerHTML = editForm;
 };
+const saveEdit = (button)  => {
+    const parentElement = button.closest(".tweet-content");
+    const textarea = parentElement.querySelector('.edit-textarea');
+    const editedContent = textarea.value;
+    parentElement.textContent = editedContent;
+}
+const cancelEdit = (button) => {
+    const parentElement = button.closest(".tweet-content");
+    const originalContent = parentElement.getAttribute('data-original-content');
+    parentElement.textContent = originalContent;
+}
 const displayReplyForm = (button) => {
     const parentElement = button.closest(".tweet") || button.closest(".comment");
     const parentContainer = parentElement.parentNode;
