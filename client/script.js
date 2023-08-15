@@ -166,7 +166,24 @@ const toggleSubcomments = button => {
     }
     subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
 };
-const toggleLike = button => button.classList.toggle('liked');
+const toggleLike = (button) => {
+    const parentElement = button.parentElement;
+    const likeCounter = parentElement.querySelector(".like-count");
+    if (!likeCounter) {
+        console.error("Элемент счётчика лайков не найден!");
+        return;
+    }
+    let currentLikes = parseInt(likeCounter.textContent, 10);
+
+    if (button.classList.contains('liked')) {
+        currentLikes--;
+    } else {
+        currentLikes++;
+    }
+
+    likeCounter.textContent = currentLikes;
+    button.classList.toggle('liked');
+};
 const deleteElement = (button) => {
     const elementToDelete = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
 
