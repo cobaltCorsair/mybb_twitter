@@ -181,11 +181,26 @@ const sendTweet = () => {
     tweetInput.value = '';
     userSentTweet = true;  // Устанавливаем флаг в true при отправке твита
 }
+const contentClassMapping = {
+    'tweet': 'tweet-content',
+    'comment': 'comment-content',
+    'subcomment': 'subcomment-content'
+};
+const getContentElement = (parentElement) => {
+    // Определение класса родительского элемента
+    const parentClass = [...parentElement.classList].find(cls => contentClassMapping[cls]);
+    // Возврат элемента содержимого на основе маппинга
+    return parentElement.querySelector(`.${contentClassMapping[parentClass]}`);
+};
 const editTweet = (button) => {
     const parentElement = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
-    const contentElement = parentElement.querySelector(".tweet-content");
-    const currentContent = contentElement.textContent.trim();
+    const contentElement = getContentElement(parentElement);
+    // Проверяем, находится ли элемент уже в режиме редактирования
+    if (contentElement.querySelector('.edit-form')) {
+        return; // Если да, то просто выходим из функции
+    }
 
+    const currentContent = contentElement.innerHTML.trim(); // Используем innerHTML
     const editForm = `
         <div class="edit-form">
             <textarea class="edit-textarea">${currentContent}</textarea>
@@ -201,17 +216,19 @@ const editTweet = (button) => {
 
     contentElement.innerHTML = editForm;
 };
-const saveEdit = (button)  => {
-    const parentElement = button.closest(".tweet-content");
-    const textarea = parentElement.querySelector('.edit-textarea');
+const saveEdit = (button) => {
+    const parentContainer = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
+    const contentElement = getContentElement(parentContainer);
+    const textarea = contentElement.querySelector('.edit-textarea');
     const editedContent = textarea.value;
-    parentElement.textContent = editedContent;
-}
+    contentElement.textContent = editedContent;
+};
 const cancelEdit = (button) => {
-    const parentElement = button.closest(".tweet-content");
-    const originalContent = parentElement.getAttribute('data-original-content');
-    parentElement.textContent = originalContent;
-}
+    const parentContainer = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
+    const contentElement = getContentElement(parentContainer);
+    const originalContent = contentElement.getAttribute('data-original-content');
+    contentElement.innerHTML = originalContent;
+};
 const displayReplyForm = (button) => {
     const parentElement = button.closest(".tweet") || button.closest(".comment");
     const parentContainer = parentElement.parentNode;
