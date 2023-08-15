@@ -51,6 +51,34 @@ const generateTweetHTML = (message) => {
         </div>
     `;
 };
+const generateCommentHTML = (commentData) => {
+    return `
+        <div class="comment">
+            <div class="line-container">
+                <span class="line-dot"></span>
+            </div>
+            <div class="comment-header">
+                <img src="${commentData.avatar_url}" alt="User Avatar">
+                <span class="comment-username">${commentData.username}</span>
+            </div>
+            <div class="comment-content">
+                ${commentData.content}
+            </div>
+            <div class="comment-time-date">
+                <span class="comment-time">${commentData.created_at}</span> <!-- Вы можете добавить дату, если нужно -->
+            </div>
+            <div class="comment-actions">
+                <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
+                <span class="like-count">0</span>
+                <button class="reply-button" onclick="displayReplyForm(this)"><i class="fas fa-pencil-alt"></i></button>
+                <button class="subcomment-button" onclick="toggleSubcomments(this)"><i class="fas fa-reply"></i><span class="subcomment-count">0</span></button>
+                <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
+                <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i></button>
+                <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i></button>
+            </div>
+        </div>
+    `;
+}
 const removeExcessTweets = () => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
@@ -187,10 +215,39 @@ const toggleLike = (button) => {
 const deleteElement = (button) => {
     const elementToDelete = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
 
-    if (elementToDelete) {
-        elementToDelete.remove();
-    } else {
+    if (!elementToDelete) {
         console.error("Не удалось найти элемент для удаления!");
+        return;
+    }
+
+    if (elementToDelete.classList.contains('tweet')) {
+        const parentContainer = elementToDelete.closest('.tweet-container');
+        if (parentContainer) {
+            parentContainer.remove();
+        } else {
+            elementToDelete.remove();
+        }
+    } else if (elementToDelete.classList.contains('comment')) {
+        const subcommentsSection = elementToDelete.nextElementSibling;
+        if (subcommentsSection && subcommentsSection.classList.contains('subcomments')) {
+            subcommentsSection.remove();
+        }
+        elementToDelete.remove();
+
+        // Update comment count for the tweet
+        const parentTweet = elementToDelete.closest(".tweet");
+        if (parentTweet) {
+            updateCommentCount(parentTweet);
+        }
+
+    } else if (elementToDelete.classList.contains('subcomment')) {
+        elementToDelete.remove();
+
+        // Update subcomment count for the comment
+        const parentComment = elementToDelete.closest(".comment");
+        if (parentComment) {
+            updateSubcommentCount(parentComment);
+        }
     }
 };
 const confirmAndExecute = (message, action, button) => {
@@ -285,7 +342,7 @@ const displayReplyForm = (button) => {
     parentContainer.insertBefore(replyForm, parentElement.nextSibling);
 };
 const addComment = (button) => {
-    const textarea = button.parentElement.querySelector('.reply-textarea');
+    const textarea = button.closest('.reply-form-container').querySelector('.reply-textarea');
     const commentContent = textarea.value;
     if (commentContent.trim() === '') {
         alert("Комментарий не может быть пустым!");
@@ -297,11 +354,56 @@ const addComment = (button) => {
         avatar_url: "URL вашего аватара",  // замените на реальный URL аватара
         created_at: "только что"
     };
-    const newCommentHTML = generateTweetHTML(commentData);
+    const newCommentHTML = generateCommentHTML(commentData);
     const newCommentElement = document.createElement('div');
     newCommentElement.innerHTML = newCommentHTML;
-    button.closest('.tweet-container').appendChild(newCommentElement);
+
+    // Определить, является ли родительский элемент комментарием или главным сообщением
+    const parentComment = button.closest('.comment');
+
+    if (parentComment) {
+        // Добавляем сабкомментарий
+        let subcommentsContainer = parentComment.querySelector('.subcomments');
+        if (!subcommentsContainer) {
+            subcommentsContainer = document.createElement('div');
+            subcommentsContainer.className = 'subcomments';
+            parentComment.appendChild(subcommentsContainer);
+        }
+        subcommentsContainer.prepend(newCommentElement);
+    } else {
+        // Добавляем основной комментарий
+        const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
+        if (commentsContainer) {
+            commentsContainer.prepend(newCommentElement);
+        } else {
+            // Если контейнера комментариев нет, создаем его
+            const newCommentsContainer = document.createElement('div');
+            newCommentsContainer.className = 'comments';
+            newCommentsContainer.appendChild(newCommentElement);
+            button.closest('.tweet-container').appendChild(newCommentsContainer);
+        }
+    }
+
     textarea.value = '';
+    button.closest('.reply-form-container').remove();
+};
+const updateCommentCount = (tweet) => {
+    const commentCountElement = tweet.querySelector(".tweet-actions .comment-count");
+    const comments = tweet.querySelectorAll(".comment");
+    if (commentCountElement) {
+        commentCountElement.textContent = comments.length;
+    } else {
+        console.error("Элемент счётчика комментариев не найден!");
+    }
+};
+const updateSubcommentCount = (comment) => {
+    const subcommentCountElement = comment.querySelector(".comment-actions .subcomment-count");
+    const subcomments = comment.querySelectorAll(".subcomment");
+    if (subcommentCountElement) {
+        subcommentCountElement.textContent = subcomments.length;
+    } else {
+        console.error("Элемент счётчика сабкомментариев не найден!");
+    }
 };
 // ================================
 // EVENT INITIALIZATION
