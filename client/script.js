@@ -167,12 +167,21 @@ const toggleSubcomments = button => {
     subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
 };
 const toggleLike = button => button.classList.toggle('liked');
+const deleteElement = (button) => {
+    const elementToDelete = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");
+
+    if (elementToDelete) {
+        elementToDelete.remove();
+    } else {
+        console.error("Не удалось найти элемент для удаления!");
+    }
+};
 const confirmAndExecute = (message, action, button) => {
     if (confirm(message)) {
         action(button);
     }
 }
-const confirmDelete = button => confirmAndExecute('Вы уверены, что хотите удалить этот элемент?', deleteTweet, button);
+const confirmDelete = button => confirmAndExecute('Вы уверены, что хотите удалить этот элемент?', deleteElement, button);
 const confirmBlacklist = button => confirmAndExecute('Вы уверены, что хотите добавить этого пользователя в черный список?', addToBlacklist, button);
 const sendTweet = () => {
     const tweetInput = document.getElementById("tweetInput");
