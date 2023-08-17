@@ -313,7 +313,9 @@ const cancelEdit = (button) => {
     contentElement.innerHTML = originalContent;
 };
 const displayReplyForm = (button) => {
-    const parentElement = button.closest(".tweet") || button.closest(".comment");
+    const isTweet = button.closest(".tweet");
+    const isComment = button.closest(".comment");
+    const parentElement = isTweet || isComment;
     const parentContainer = parentElement.parentNode;
 
     // Удалим все открытые формы для ответа на странице, кроме той, что привязана к текущей кнопке
@@ -330,6 +332,13 @@ const displayReplyForm = (button) => {
 
     const replyForm = document.createElement('div');
     replyForm.className = 'reply-form-container';
+
+    if (isTweet) {
+        replyForm.setAttribute('data-type', 'tweet');
+    } else if (isComment) {
+        replyForm.setAttribute('data-type', 'comment');
+    }
+
     replyForm.innerHTML = `
     <div class="reply-input-container">
         <textarea class="reply-textarea" placeholder="Напишите ваш комментарий..."></textarea>
@@ -342,50 +351,59 @@ const displayReplyForm = (button) => {
     parentContainer.insertBefore(replyForm, parentElement.nextSibling);
 };
 const addComment = (button) => {
-    const textarea = button.closest('.reply-form-container').querySelector('.reply-textarea');
+    const replyForm = button.closest('.reply-form-container');
+    const type = replyForm.getAttribute('data-type');
+
+    const textarea = replyForm.querySelector('.reply-textarea');
     const commentContent = textarea.value;
+
     if (commentContent.trim() === '') {
         alert("Комментарий не может быть пустым!");
         return;
     }
+
     const commentData = {
         content: commentContent,
-        username: "Ваше имя пользователя",  // замените на реальное имя пользователя
-        avatar_url: "URL вашего аватара",  // замените на реальный URL аватара
+        username: "Ваше имя пользователя",
+        avatar_url: "URL вашего аватара",
         created_at: "только что"
     };
     const newCommentHTML = generateCommentHTML(commentData);
     const newCommentElement = document.createElement('div');
     newCommentElement.innerHTML = newCommentHTML;
 
-    // Определить, является ли родительский элемент комментарием или главным сообщением
-    const parentComment = button.closest('.comment');
+    switch (type) {
+        case 'tweet':
+            const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
+            if (commentsContainer) {
+                commentsContainer.prepend(newCommentElement);
+            } else {
+                const newCommentsContainer = document.createElement('div');
+                newCommentsContainer.className = 'comments';
+                newCommentsContainer.appendChild(newCommentElement);
+                button.closest('.tweet-container').appendChild(newCommentsContainer);
+            }
+            break;
 
-    if (parentComment) {
-        // Добавляем сабкомментарий
-        let subcommentsContainer = parentComment.querySelector('.subcomments');
-        if (!subcommentsContainer) {
-            subcommentsContainer = document.createElement('div');
-            subcommentsContainer.className = 'subcomments';
-            parentComment.appendChild(subcommentsContainer);
-        }
-        subcommentsContainer.prepend(newCommentElement);
-    } else {
-        // Добавляем основной комментарий
-        const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
-        if (commentsContainer) {
-            commentsContainer.prepend(newCommentElement);
-        } else {
-            // Если контейнера комментариев нет, создаем его
-            const newCommentsContainer = document.createElement('div');
-            newCommentsContainer.className = 'comments';
-            newCommentsContainer.appendChild(newCommentElement);
-            button.closest('.tweet-container').appendChild(newCommentsContainer);
-        }
+        case 'comment':
+            let parentComment = replyForm.previousElementSibling;
+            let subcommentsContainer = parentComment.nextElementSibling;
+
+            if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
+                subcommentsContainer = document.createElement('div');
+                subcommentsContainer.className = 'subcomments';
+                parentComment.insertAdjacentElement('afterend', subcommentsContainer);
+            }
+
+            subcommentsContainer.prepend(newCommentElement);
+            break;
+
+        default:
+            console.log('Unknown type');
     }
 
     textarea.value = '';
-    button.closest('.reply-form-container').remove();
+    replyForm.remove();
 };
 const updateCommentCount = (tweet) => {
     const commentCountElement = tweet.querySelector(".tweet-actions .comment-count");
