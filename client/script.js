@@ -26,7 +26,7 @@ const isWrapperAtBottom = (wrapper) => {
 };
 const generateTweetHTML = (message) => {
     return `
-        <div class="tweet-container">
+        <div class="tweet-container" data-tweet-id="${message.id}">
             <div class="tweet">
                 <div class="tweet-header">
                     <img src="${message.avatar_url}" alt="User Avatar">
@@ -104,6 +104,11 @@ const displayRecentMessages = (data) => {
     const wasAtBottom = isWrapperAtBottom(tweetsWrapper);
 
     data.messages.forEach(message => {
+        // Проверка на существование твита
+        if (document.querySelector(`.tweet-container[data-tweet-id="${message.id}"]`)) {
+            return; // Твит уже существует, пропускаем его
+        }
+
         const tweetHTML = generateTweetHTML(message);
         const newTweetElement = document.createElement('div');
         newTweetElement.innerHTML = tweetHTML;
