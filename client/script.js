@@ -51,7 +51,15 @@ const generateTweetHTML = (message) => {
         </div>
     `;
 };
-const generateCommentHTML = (commentData) => {
+const generateCommentHTML = (commentData, isSubcomment = false) => {
+    // Если это сабкоммент, то не отображаем кнопку счетчика подкомментариев.
+    const subcommentButtonHTML = isSubcomment ? '' : `
+        <button class="subcomment-button" onclick="toggleSubcomments(this)">
+            <i class="fas fa-reply"></i>
+            <span class="subcomment-count">0</span>
+        </button>
+    `;
+
     return `
         <div class="comment">
             <div class="line-container">
@@ -65,20 +73,20 @@ const generateCommentHTML = (commentData) => {
                 ${commentData.content}
             </div>
             <div class="comment-time-date">
-                <span class="comment-time">${commentData.created_at}</span> <!-- Вы можете добавить дату, если нужно -->
+                <span class="comment-time">${commentData.created_at}</span>
             </div>
             <div class="comment-actions">
                 <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
                 <span class="like-count">0</span>
                 <button class="reply-button" onclick="displayReplyForm(this)"><i class="fas fa-pencil-alt"></i></button>
-                <button class="subcomment-button" onclick="toggleSubcomments(this)"><i class="fas fa-reply"></i><span class="subcomment-count">0</span></button>
+                ${subcommentButtonHTML}
                 <button class="edit-button" onclick="editTweet(this)"><i class="far fa-edit"></i></button>
                 <button class="delete-button" onclick="confirmDelete(this)"><i class="far fa-trash-alt"></i></button>
                 <button class="blacklist-button" onclick="confirmBlacklist(this)"><i class="fas fa-ban"></i></button>
             </div>
         </div>
     `;
-}
+};
 const removeExcessTweets = () => {
     const tweetsWrapper = document.getElementById('tweets-wrapper');
     const tweets = tweetsWrapper.getElementsByClassName('tweet-container');
@@ -363,64 +371,100 @@ const addComment = (button) => {
     }
 
     const commentData = {
+        avatar_url: "https://via.placeholder.com/30",  // Заглушка для аватара
+        username: "Username",  // Заглушка для имени пользователя
         content: commentContent,
-        username: "Ваше имя пользователя",
-        avatar_url: "URL вашего аватара",
-        created_at: "только что"
+        created_at: "только что"  // Текущее время
     };
-    const newCommentHTML = generateCommentHTML(commentData);
-    const newCommentElement = document.createElement('div');
-    newCommentElement.innerHTML = newCommentHTML;
 
+    let newCommentHTML;
     switch (type) {
         case 'tweet':
-            const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
-            if (commentsContainer) {
-                commentsContainer.prepend(newCommentElement);
-            } else {
-                const newCommentsContainer = document.createElement('div');
-                newCommentsContainer.className = 'comments';
-                newCommentsContainer.appendChild(newCommentElement);
-                button.closest('.tweet-container').appendChild(newCommentsContainer);
-            }
+            newCommentHTML = generateCommentHTML(commentData);
             break;
 
         case 'comment':
-            let parentComment = replyForm.previousElementSibling;
-            let subcommentsContainer = parentComment.nextElementSibling;
-
-            if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
-                subcommentsContainer = document.createElement('div');
-                subcommentsContainer.className = 'subcomments';
-                parentComment.insertAdjacentElement('afterend', subcommentsContainer);
-            }
-
-            subcommentsContainer.prepend(newCommentElement);
+            newCommentHTML = generateCommentHTML(commentData, true); // Указываем, что это сабкомментарий
             break;
 
         default:
             console.log('Unknown type');
     }
 
+    const newCommentElement = document.createElement('div');
+    newCommentElement.innerHTML = newCommentHTML;
+
+    if (type === 'tweet') {
+        const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
+        if (commentsContainer) {
+            commentsContainer.prepend(newCommentElement);
+        } else {
+            const newCommentsContainer = document.createElement('div');
+            newCommentsContainer.className = 'comments';
+            newCommentsContainer.appendChild(newCommentElement);
+            button.closest('.tweet-container').appendChild(newCommentsContainer);
+        }
+        updateCommentCount(button.closest('.tweet-container'));
+    } else if (type === 'comment') {
+        let parentComment = replyForm.previousElementSibling;
+        let subcommentsContainer = parentComment.nextElementSibling;
+
+        // Проверяем, является ли следующий элемент блоком 'reply-form-container' или 'subcomments'
+        if (subcommentsContainer && subcommentsContainer.classList.contains('reply-form-container')) {
+            subcommentsContainer = subcommentsContainer.nextElementSibling;
+        }
+
+        // Если блок 'subcomments' не найден, создаем его
+        if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
+            subcommentsContainer = document.createElement('div');
+            subcommentsContainer.className = 'subcomments';
+            parentComment.insertAdjacentElement('afterend', subcommentsContainer);
+        }
+
+        // Добавляем новый комментарий в блок 'subcomments'
+        subcommentsContainer.prepend(newCommentElement);
+
+        // Находим кнопку replyButton внутри parentComment
+        const replyButton = parentComment.querySelector('.reply-button');
+
+        // Обновляем счетчик сабкомментариев
+        updateSubcommentCount(replyButton);
+    }
+
     textarea.value = '';
     replyForm.remove();
 };
-const updateCommentCount = (tweet) => {
-    const commentCountElement = tweet.querySelector(".tweet-actions .comment-count");
-    const comments = tweet.querySelectorAll(".comment");
-    if (commentCountElement) {
-        commentCountElement.textContent = comments.length;
-    } else {
-        console.error("Элемент счётчика комментариев не найден!");
-    }
+const updateCommentCount = (tweetContainer) => {
+    const commentCountElem = tweetContainer.querySelector('.comment-count');
+    if (!commentCountElem) return;
+
+    const commentsContainer = tweetContainer.querySelector('.comments');
+    const commentCount = commentsContainer ? commentsContainer.children.length : 0;
+
+    commentCountElem.textContent = commentCount;
 };
-const updateSubcommentCount = (comment) => {
-    const subcommentCountElement = comment.querySelector(".comment-actions .subcomment-count");
-    const subcomments = comment.querySelectorAll(".subcomment");
-    if (subcommentCountElement) {
-        subcommentCountElement.textContent = subcomments.length;
+const updateSubcommentCount = (replyButton) => {
+    // Находим ближайший родительский комментарий
+    const parentComment = replyButton.closest('.comment');
+    if (!parentComment) return;
+
+    // Находим элемент счётчика сабкомментов
+    const subcommentCountElem = parentComment.querySelector('.subcomment-count');
+    if (!subcommentCountElem) return;
+
+    // Находим контейнер с сабкомментариями
+    let subcommentsContainer = parentComment.nextElementSibling;
+    if (subcommentsContainer && subcommentsContainer.classList.contains('reply-form-container')) {
+        subcommentsContainer = subcommentsContainer.nextElementSibling;
+    }
+
+    // Если контейнер с сабкомментариями существует, то обновляем счётчик
+    if (subcommentsContainer && subcommentsContainer.classList.contains('subcomments')) {
+        const subcommentCount = subcommentsContainer.children.length;
+        subcommentCountElem.textContent = subcommentCount;
     } else {
-        console.error("Элемент счётчика сабкомментариев не найден!");
+        // Если нет сабкомментариев, устанавливаем счётчик в 0
+        subcommentCountElem.textContent = 0;
     }
 };
 // ================================
