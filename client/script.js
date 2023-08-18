@@ -12,7 +12,6 @@ socket.on('connect', () => {
 socket.on('new tweet', data => {
     console.log("Received new tweet event:", data);
     displayRecentMessages({messages: [data], hasMoreMessages: true});
-    removeExtraTweets();
 });
 // ================================
 // TWEET LOADING FUNCTIONS
@@ -268,9 +267,21 @@ const confirmBlacklist = button => confirmAndExecute('Вы уверены, чт�
 const sendTweet = () => {
     const tweetInput = document.getElementById("tweetInput");
     const tweetContent = tweetInput.value;
-    socket.emit('create message', {content: tweetContent});
+
+    // Предполагаем, что у нас есть функции или переменные, которые могут предоставить user_id, username и avatar_url
+    const userId = getCurrentUserId();
+    const username = getCurrentUsername();
+    const avatarUrl = getCurrentUserAvatarUrl();
+
+    socket.emit('create message', {
+        user_id: userId,
+        username: username,
+        avatar_url: avatarUrl,
+        content: tweetContent
+    });
+
     tweetInput.value = '';
-    userSentTweet = true;  // Устанавливаем флаг в true при отправке твита
+    userSentTweet = true;
 }
 const contentClassMapping = {
     'tweet': 'tweet-content',
@@ -381,10 +392,12 @@ const addComment = (button) => {
     switch (type) {
         case 'tweet':
             newCommentHTML = generateCommentHTML(commentData);
+            //socket.emit('create comment', commentData);
             break;
 
         case 'comment':
             newCommentHTML = generateCommentHTML(commentData, true); // Указываем, что это сабкомментарий
+            //socket.emit('create subcomment', commentData);
             break;
 
         default:
@@ -467,6 +480,12 @@ const updateSubcommentCount = (replyButton) => {
         subcommentCountElem.textContent = 0;
     }
 };
+// Функция-заглушка для получения ID текущего пользователя
+const getCurrentUserId = () => 1;  // Заглушка: возвращает фиксированный ID. Замените на реальный ID.
+// Функция-заглушка для получения имени текущего пользователя
+const getCurrentUsername = () => "JohnDoe";  // Заглушка: возвращает фиксированное имя. Замените на реальное имя.
+// Функция-заглушка для получения URL аватара текущего пользователя
+const getCurrentUserAvatarUrl = () => "https://via.placeholder.com/50";  // Заглушка: возвращает фиксированный URL аватара. Замените на реальный URL.
 // ================================
 // EVENT INITIALIZATION
 // ================================

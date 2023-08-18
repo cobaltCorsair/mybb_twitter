@@ -50,7 +50,8 @@ class MessageManager:
             'content': message.content,
             'created_at': MessageManager.human_readable_time_difference(
                 message.created_at) if message.created_at else None,
-            'username': message.user.username,
+            'username': message.user.username if message.user else None,
+            'avatar_url': message.user.avatar_url if message.user else None,  # Add avatar_url here
             'likes': len(message.likes),
             'comments': comments_count,
             'subcomments': subcomments_count
