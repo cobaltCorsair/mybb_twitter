@@ -84,11 +84,8 @@ class CreateMessageView(BaseView):
 
         message_id = user_service.create_message(user_id, content)
 
-        print('Emitting message:', data)
         data['message_id'] = message_id
-        print('Preparing to emit tweet:', data)
         self.socketio.emit('new tweet', data, room='room')
-        print('Tweet emitted:', data)
         return jsonify({"message": f"Message has been created for user {username}.", "message_id": message_id}), 201
 
 
@@ -156,6 +153,11 @@ class CreateCommentView(BaseView):
             return jsonify({"message": str(e)}), 400
         return self.handle_create_comment(data)
 
+    @socketio.on('new comment')
+    def handle_new_comment_socket(self, data):
+        # Этот метод может оставаться пустым, так как он используется только для регистрации события
+        pass
+
     def handle_create_comment(self, data):
         user_id: int = data.get('user_id')
         message_id: str = data.get('message_id')
@@ -166,7 +168,7 @@ class CreateCommentView(BaseView):
 
         comment_id = user_service.create_comment(user_id, message_id, content)
         data['comment_id'] = comment_id  # Add the comment id to the data
-        self.socketio.emit('create comment', data, room='room')
+        self.socketio.emit('new comment', data, room='room')
         return jsonify(
             {"message": f"Comment has been created for message {message_id}.", "comment_id": comment_id}), 201
 
@@ -237,6 +239,11 @@ class CreateSubCommentView(BaseView):
             return jsonify({"message": str(e)}), 400
         return self.handle_create_subcomment(data)
 
+    @socketio.on('new subcomment')
+    def handle_new_subcomment_socket(self, data):
+        # Этот метод может оставаться пустым, так как он используется только для регистрации события
+        pass
+
     def handle_create_subcomment(self, data):
         user_id: int = data.get('user_id')
         comment_id: str = data.get('comment_id')
@@ -247,7 +254,7 @@ class CreateSubCommentView(BaseView):
 
         subcomment_id = user_service.create_subcomment(user_id, comment_id, content)
         data['subcomment_id'] = subcomment_id  # Add the subcomment id to the data
-        self.socketio.emit('create subcomment', data, room='room')
+        self.socketio.emit('new subcomment', data, room='room')
         return jsonify(
             {"message": f"SubComment has been created for comment {comment_id}.", "subcomment_id": subcomment_id}), 201
 

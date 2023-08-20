@@ -46,7 +46,7 @@ class MessageManager:
         subcomments_count = subcomments_data[0]['count'] if subcomments_data else 0
 
         return {
-            'id': str(message.id),
+            'message_id': str(message.id),
             'content': message.content,
             'created_at': MessageManager.human_readable_time_difference(
                 message.created_at) if message.created_at else None,

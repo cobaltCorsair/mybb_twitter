@@ -13,6 +13,14 @@ socket.on('new tweet', data => {
     console.log("Received new tweet event:", data);
     displayRecentMessages({messages: [data], hasMoreMessages: true});
 });
+socket.on('create comment', data => {
+    console.log("Received new comment event:", data);
+    displayNewComment(data);
+});
+socket.on('create subcomment', data => {
+    console.log("Received new subcomment event:", data);
+    displayNewSubcomment(data);
+});
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
@@ -26,7 +34,7 @@ const isWrapperAtBottom = (wrapper) => {
 };
 const generateTweetHTML = (message) => {
     return `
-        <div class="tweet-container" data-tweet-id="${message.id}">
+        <div class="tweet-container" data-tweet-id="${message.message_id}">
             <div class="tweet">
                 <div class="tweet-header">
                     <img src="${message.avatar_url}" alt="User Avatar">
@@ -59,8 +67,10 @@ const generateCommentHTML = (commentData, isSubcomment = false) => {
         </button>
     `;
 
+    const commentIdAttribute = isSubcomment ? `data-subcomment-id="${commentData.id}"` : `data-comment-id="${commentData.id}"`;
+
     return `
-        <div class="comment">
+        <div class="comment" ${commentIdAttribute}>
             <div class="line-container">
                 <span class="line-dot"></span>
             </div>
@@ -105,18 +115,20 @@ const displayRecentMessages = (data) => {
 
     data.messages.forEach(message => {
         // Проверка на существование твита
-        if (document.querySelector(`.tweet-container[data-tweet-id="${message.id}"]`)) {
-            return; // Твит уже существует, пропускаем его
-        }
+        const existingTweet = document.querySelector(`.tweet-container[data-tweet-id="${message.message_id}"]`);
 
-        const tweetHTML = generateTweetHTML(message);
-        const newTweetElement = document.createElement('div');
-        newTweetElement.innerHTML = tweetHTML;
-
-        if (loadingOlderTweets) {
-            tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.lastChild); // Старые сообщения вставляем в начало
+        if (existingTweet) {
+            existingTweet.setAttribute('data-tweet-id', message.message_id); // Обновляем ID твита в DOM
         } else {
-            tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild); // Новые сообщения вставляем в самом верху
+            const tweetHTML = generateTweetHTML(message);
+            const newTweetElement = document.createElement('div');
+            newTweetElement.innerHTML = tweetHTML;
+
+            if (loadingOlderTweets) {
+                tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.lastChild); // Старые сообщения вставляем в начало
+            } else {
+                tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild); // Новые сообщения вставляем в самом верху
+            }
         }
     });
 
@@ -138,6 +150,12 @@ const displayRecentMessages = (data) => {
     }
 
     loadingOlderTweets = false;
+};
+const displayNewComment = (data) => {
+    // TODO:: Реализация подгрузки комментов
+};
+const displayNewSubcomment = (data) => {
+    // TODO:: Реализация подгрузки сабкомментов
 };
 const initTweetLoadingEvents = () => {
     socket.on('recent messages', displayRecentMessages);
@@ -282,7 +300,8 @@ const sendTweet = () => {
         user_id: userId,
         username: username,
         avatar_url: avatarUrl,
-        content: tweetContent
+        content: tweetContent,
+        created_at: "только что"  // Текущее время
     });
 
     tweetInput.value = '';
@@ -386,9 +405,17 @@ const addComment = (button) => {
         return;
     }
 
+    // Предполагаем, что у нас есть функции или переменные, которые могут предоставить user_id, username и avatar_url
+    const userId = getCurrentUserId();
+    const username = getCurrentUsername();
+    const avatarUrl = getCurrentUserAvatarUrl();
+    const messageId = getTweetIdFromElement(button); // Получаем ID связанного сообщения
+
     const commentData = {
-        avatar_url: "https://via.placeholder.com/30",  // Заглушка для аватара
-        username: "Username",  // Заглушка для имени пользователя
+        message_id: messageId,
+        user_id: userId,
+        username: username,
+        avatar_url: avatarUrl,
         content: commentContent,
         created_at: "только что"  // Текущее время
     };
@@ -397,12 +424,12 @@ const addComment = (button) => {
     switch (type) {
         case 'tweet':
             newCommentHTML = generateCommentHTML(commentData);
-            //socket.emit('create comment', commentData);
+            socket.emit('create comment', commentData);
             break;
 
         case 'comment':
             newCommentHTML = generateCommentHTML(commentData, true); // Указываем, что это сабкомментарий
-            //socket.emit('create subcomment', commentData);
+            socket.emit('create subcomment', commentData);
             break;
 
         default:
@@ -494,6 +521,11 @@ const getCurrentUserAvatarUrl = () => "https://via.placeholder.com/50";  // За
 // ================================
 // EVENT INITIALIZATION
 // ================================
+// Функция для получения ID текущего твита
+const getTweetIdFromElement = (element) => {
+    const tweetContainer = element.closest('.tweet-container');
+    return tweetContainer ? tweetContainer.getAttribute('data-tweet-id') : null;
+};
 document.addEventListener("DOMContentLoaded", function () {
     initTweetLoadingEvents();
     loadRecentMessages();

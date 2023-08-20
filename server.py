@@ -45,6 +45,7 @@ event_handlers = {
     'delete message': 'handle_delete_message_socket',
     'update message': 'handle_update_message_socket',
     'create comment': 'handle_create_comment_socket',
+    'new comment': 'handle_new_comment_socket',
     'delete comment': 'handle_delete_comment_socket',
     'update comment': 'handle_update_comment_socket',
     'like message': 'handle_like_message_socket',
@@ -63,6 +64,7 @@ event_handlers = {
     'get message comments': 'handle_get_message_comments_socket',
     'get user posts': 'handle_get_user_posts_socket',
     'create subcomment': 'handle_create_subcomment_socket',
+    'new subcomment': 'handle_new_subcomment_socket',
     'delete subcomment': 'handle_delete_subcomment_socket',
     'update subcomment': 'handle_update_subcomment_socket',
 }
