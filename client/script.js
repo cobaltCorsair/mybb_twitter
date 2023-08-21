@@ -13,11 +13,11 @@ socket.on('new tweet', data => {
     console.log("Received new tweet event:", data);
     displayRecentMessages({messages: [data], hasMoreMessages: true});
 });
-socket.on('create comment', data => {
+socket.on('new comment', data => {
     console.log("Received new comment event:", data);
     displayNewComment(data);
 });
-socket.on('create subcomment', data => {
+socket.on('new subcomment', data => {
     console.log("Received new subcomment event:", data);
     displayNewSubcomment(data);
 });
@@ -67,7 +67,7 @@ const generateCommentHTML = (commentData, isSubcomment = false) => {
         </button>
     `;
 
-    const commentIdAttribute = isSubcomment ? `data-subcomment-id="${commentData.id}"` : `data-comment-id="${commentData.id}"`;
+    const commentIdAttribute = isSubcomment ? `data-subcomment-id="${commentData.subcomment_id}"` : `data-comment-id="${commentData.comment_id}"`;
 
     return `
         <div class="comment" ${commentIdAttribute}>
@@ -152,10 +152,50 @@ const displayRecentMessages = (data) => {
     loadingOlderTweets = false;
 };
 const displayNewComment = (data) => {
-    // TODO:: Реализация подгрузки комментов
+    console.log("Attempting to display comment/subcomment with data:", data);
+    const newCommentHTML = generateCommentHTML(data);
+    const newCommentElement = document.createElement('div');
+    newCommentElement.innerHTML = newCommentHTML;
+
+    const tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
+    console.log("Found tweet element:", tweetElement);
+
+    const commentsContainer = tweetElement.querySelector('.comments');
+    console.log("Found comments container:", commentsContainer);
+
+    if (commentsContainer) {
+        commentsContainer.prepend(newCommentElement);
+    } else {
+        const newCommentsContainer = document.createElement('div');
+        newCommentsContainer.className = 'comments';
+        newCommentsContainer.appendChild(newCommentElement);
+        tweetElement.appendChild(newCommentsContainer);
+    }
+    updateCommentCount(tweetElement);
 };
 const displayNewSubcomment = (data) => {
-    // TODO:: Реализация подгрузки сабкомментов
+    console.log("Attempting to display comment/subcomment with data:", data);
+    const newSubcommentHTML = generateCommentHTML(data, true);
+    const newSubcommentElement = document.createElement('div');
+    newSubcommentElement.innerHTML = newSubcommentHTML;
+
+    const parentComment = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
+    console.log("Found parent comment element:", parentComment);
+
+    let subcommentsContainer = parentComment.nextElementSibling;
+    console.log("Found/created subcomments container:", subcommentsContainer);
+
+
+    if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
+        subcommentsContainer = document.createElement('div');
+        subcommentsContainer.className = 'subcomments';
+        parentComment.insertAdjacentElement('afterend', subcommentsContainer);
+    }
+
+    subcommentsContainer.prepend(newSubcommentElement);
+
+    const replyButton = parentComment.querySelector('.reply-button');
+    updateSubcommentCount(replyButton);
 };
 const initTweetLoadingEvents = () => {
     socket.on('recent messages', displayRecentMessages);
@@ -405,11 +445,10 @@ const addComment = (button) => {
         return;
     }
 
-    // Предполагаем, что у нас есть функции или переменные, которые могут предоставить user_id, username и avatar_url
     const userId = getCurrentUserId();
     const username = getCurrentUsername();
     const avatarUrl = getCurrentUserAvatarUrl();
-    const messageId = getTweetIdFromElement(button); // Получаем ID связанного сообщения
+    const messageId = getTweetIdFromElement(button);
 
     const commentData = {
         message_id: messageId,
@@ -417,64 +456,21 @@ const addComment = (button) => {
         username: username,
         avatar_url: avatarUrl,
         content: commentContent,
-        created_at: "только что"  // Текущее время
+        created_at: "только что"
     };
 
-    let newCommentHTML;
     switch (type) {
         case 'tweet':
-            newCommentHTML = generateCommentHTML(commentData);
             socket.emit('create comment', commentData);
             break;
-
         case 'comment':
-            newCommentHTML = generateCommentHTML(commentData, true); // Указываем, что это сабкомментарий
             socket.emit('create subcomment', commentData);
             break;
-
         default:
             console.log('Unknown type');
     }
+    console.log("Data sent to server:", commentData);
 
-    const newCommentElement = document.createElement('div');
-    newCommentElement.innerHTML = newCommentHTML;
-
-    if (type === 'tweet') {
-        const commentsContainer = button.closest('.tweet-container').querySelector('.comments');
-        if (commentsContainer) {
-            commentsContainer.prepend(newCommentElement);
-        } else {
-            const newCommentsContainer = document.createElement('div');
-            newCommentsContainer.className = 'comments';
-            newCommentsContainer.appendChild(newCommentElement);
-            button.closest('.tweet-container').appendChild(newCommentsContainer);
-        }
-        updateCommentCount(button.closest('.tweet-container'));
-    } else if (type === 'comment') {
-        let parentComment = replyForm.previousElementSibling;
-        let subcommentsContainer = parentComment.nextElementSibling;
-
-        // Проверяем, является ли следующий элемент блоком 'reply-form-container' или 'subcomments'
-        if (subcommentsContainer && subcommentsContainer.classList.contains('reply-form-container')) {
-            subcommentsContainer = subcommentsContainer.nextElementSibling;
-        }
-
-        // Если блок 'subcomments' не найден, создаем его
-        if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
-            subcommentsContainer = document.createElement('div');
-            subcommentsContainer.className = 'subcomments';
-            parentComment.insertAdjacentElement('afterend', subcommentsContainer);
-        }
-
-        // Добавляем новый комментарий в блок 'subcomments'
-        subcommentsContainer.prepend(newCommentElement);
-
-        // Находим кнопку replyButton внутри parentComment
-        const replyButton = parentComment.querySelector('.reply-button');
-
-        // Обновляем счетчик сабкомментариев
-        updateSubcommentCount(replyButton);
-    }
 
     textarea.value = '';
     replyForm.remove();
