@@ -3,7 +3,7 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_cors import cross_origin
 from socketio_singleton import socketio
-from models import User
+from models import User, Comment
 from user_functions import UserService
 
 user_service = UserService()
@@ -252,7 +252,13 @@ class CreateSubCommentView(BaseView):
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
 
-        subcomment_id = user_service.create_subcomment(user_id, comment_id, content)
+        try:
+            subcomment_id = user_service.create_subcomment(user_id, comment_id, content)
+        except Comment.DoesNotExist:
+            # Здесь вы можете решить, что делать, если комментарий не найден.
+            # Например, вернуть сообщение об ошибке.
+            return jsonify({"message": f"Comment with ID {comment_id} does not exist."}), 404
+
         data['subcomment_id'] = subcomment_id  # Add the subcomment id to the data
         self.socketio.emit('new subcomment', data, room='room')
         return jsonify(
@@ -554,7 +560,7 @@ class GetRecentMessagesView(BaseView):
         recent_messages_dicts = response_data['messages']
         print(f"Emitting 'recent messages' event to client with data (offset {offset}):", recent_messages_dicts)
         self.socketio.emit('recent messages', response_data, room='room')
-        return jsonify({"recent_messages": [message['id'] for message in recent_messages_dicts]}), 200
+        return jsonify({"recent_messages": [message['message_id'] for message in recent_messages_dicts]}), 200
 
 
 class SendNotificationView(BaseView):

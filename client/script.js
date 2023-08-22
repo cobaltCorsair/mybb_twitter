@@ -174,17 +174,12 @@ const displayNewComment = (data) => {
     updateCommentCount(tweetElement);
 };
 const displayNewSubcomment = (data) => {
-    console.log("Attempting to display comment/subcomment with data:", data);
     const newSubcommentHTML = generateCommentHTML(data, true);
     const newSubcommentElement = document.createElement('div');
     newSubcommentElement.innerHTML = newSubcommentHTML;
 
     const parentComment = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
-    console.log("Found parent comment element:", parentComment);
-
     let subcommentsContainer = parentComment.nextElementSibling;
-    console.log("Found/created subcomments container:", subcommentsContainer);
-
 
     if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
         subcommentsContainer = document.createElement('div');
