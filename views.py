@@ -59,7 +59,6 @@ class CreateMessageView(BaseView):
             user_service.check_message_length(content, 500)
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
-        print('Received message:', data)
         return self.handle_create_message(data)
 
     @socketio.on('new tweet')
@@ -246,23 +245,24 @@ class CreateSubCommentView(BaseView):
 
     def handle_create_subcomment(self, data):
         user_id: int = data.get('user_id')
-        comment_id: str = data.get('comment_id')
+        message_id: str = data.get('message_id')
         content: str = data.get('content')
 
         if not user_service.user_exists(user_id):
             return jsonify({"message": "User does not exist"}), 404
 
         try:
-            subcomment_id = user_service.create_subcomment(user_id, comment_id, content)
+            subcomment_id = user_service.create_subcomment(user_id, message_id, content)
+
         except Comment.DoesNotExist:
             # Здесь вы можете решить, что делать, если комментарий не найден.
             # Например, вернуть сообщение об ошибке.
-            return jsonify({"message": f"Comment with ID {comment_id} does not exist."}), 404
+            return jsonify({"message": f"Comment with ID {message_id} does not exist."}), 404
 
         data['subcomment_id'] = subcomment_id  # Add the subcomment id to the data
         self.socketio.emit('new subcomment', data, room='room')
         return jsonify(
-            {"message": f"SubComment has been created for comment {comment_id}.", "subcomment_id": subcomment_id}), 201
+            {"message": f"SubComment has been created for comment {message_id}.", "subcomment_id": subcomment_id}), 201
 
 
 class DeleteSubCommentView(BaseView):
@@ -552,13 +552,11 @@ class GetRecentMessagesView(BaseView):
     @socketio.on('get recent messages')
     def handle_get_recent_messages_socket(self, data):
         offset = data.get('offset', 0)
-        print(f"Received 'get recent messages' event from client with offset {offset}")
         return self.handle_get_recent_messages(offset)
 
     def handle_get_recent_messages(self, offset=0):
         response_data = user_service.get_recent_messages(offset=offset)
         recent_messages_dicts = response_data['messages']
-        print(f"Emitting 'recent messages' event to client with data (offset {offset}):", recent_messages_dicts)
         self.socketio.emit('recent messages', response_data, room='room')
         return jsonify({"recent_messages": [message['message_id'] for message in recent_messages_dicts]}), 200
 

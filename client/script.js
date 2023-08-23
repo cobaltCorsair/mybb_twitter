@@ -152,16 +152,13 @@ const displayRecentMessages = (data) => {
     loadingOlderTweets = false;
 };
 const displayNewComment = (data) => {
-    console.log("Attempting to display comment/subcomment with data:", data);
     const newCommentHTML = generateCommentHTML(data);
     const newCommentElement = document.createElement('div');
     newCommentElement.innerHTML = newCommentHTML;
 
     const tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
-    console.log("Found tweet element:", tweetElement);
 
     const commentsContainer = tweetElement.querySelector('.comments');
-    console.log("Found comments container:", commentsContainer);
 
     if (commentsContainer) {
         commentsContainer.prepend(newCommentElement);
@@ -177,8 +174,7 @@ const displayNewSubcomment = (data) => {
     const newSubcommentHTML = generateCommentHTML(data, true);
     const newSubcommentElement = document.createElement('div');
     newSubcommentElement.innerHTML = newSubcommentHTML;
-
-    const parentComment = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
+    const parentComment = document.querySelector(`.comment[data-comment-id="${data.message_id}"]`);
     let subcommentsContainer = parentComment.nextElementSibling;
 
     if (!subcommentsContainer || !subcommentsContainer.classList.contains('subcomments')) {
@@ -459,12 +455,16 @@ const addComment = (button) => {
             socket.emit('create comment', commentData);
             break;
         case 'comment':
+            const commentId = getCommentIdFromElement(button); // Получаем comment_id
+            if (commentId) {
+                commentData.message_id = commentId;
+            } else {
+                console.error("Cannot determine comment_id");
+                return;
+            }
             socket.emit('create subcomment', commentData);
             break;
-        default:
-            console.log('Unknown type');
     }
-    console.log("Data sent to server:", commentData);
 
 
     textarea.value = '';
@@ -516,6 +516,16 @@ const getCurrentUserAvatarUrl = () => "https://via.placeholder.com/50";  // За
 const getTweetIdFromElement = (element) => {
     const tweetContainer = element.closest('.tweet-container');
     return tweetContainer ? tweetContainer.getAttribute('data-tweet-id') : null;
+};
+const getCommentIdFromElement = (element) => {
+    const replyForm = element.closest('.reply-form-container');
+    if (replyForm) {
+        const commentElement = replyForm.previousElementSibling;
+        if (commentElement && commentElement.classList.contains('comment')) {
+            return commentElement.getAttribute('data-comment-id');
+        }
+    }
+    return null;
 };
 document.addEventListener("DOMContentLoaded", function () {
     initTweetLoadingEvents();
