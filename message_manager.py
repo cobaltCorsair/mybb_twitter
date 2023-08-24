@@ -56,3 +56,25 @@ class MessageManager:
             'comments': comments_count,
             'subcomments': subcomments_count
         }
+
+    @staticmethod
+    def comment_to_dict(comment):
+        return {
+            'comment_id': str(comment.id),
+            'content': comment.content,
+            'created_at': MessageManager.human_readable_time_difference(
+                comment.created_at) if comment.created_at else None,
+            'username': comment.user.username if comment.user else None,
+            'avatar_url': comment.user.avatar_url if comment.user else None,
+        }
+
+    @staticmethod
+    def subcomment_to_dict(subcomment):
+        return {
+            'subcomment_id': str(subcomment.id),
+            'content': subcomment.content,
+            'created_at': MessageManager.human_readable_time_difference(
+                subcomment.created_at) if subcomment.created_at else None,
+            'username': subcomment.user.username if subcomment.user else None,
+            'avatar_url': subcomment.user.avatar_url if subcomment.user else None,
+        }

@@ -212,13 +212,33 @@ class UserService:
 
     def get_recent_messages(self, offset=0, limit=10) -> dict:
         recent_messages_objects = list(Message.objects.order_by('-created_at').skip(offset).limit(limit + 1))
+        print(f"Retrieved {len(recent_messages_objects)} messages from the database.")
 
         has_more_messages = len(recent_messages_objects) > limit
         if has_more_messages:
             recent_messages_objects = recent_messages_objects[:-1]
 
+        messages_dicts = []
+        for message in recent_messages_objects:
+            message_dict = MessageManager.message_to_dict(message)
+
+            # Fetch comments for the message
+            comments = Comment.objects(message=message.id)
+            print(f"Retrieved {len(comments)} comments for message with ID {message.id}.")
+            message_dict['comments'] = [MessageManager.comment_to_dict(comment) for comment in comments]
+
+
+            # For each comment, fetch subcomments
+            for comment_dict in message_dict['comments']:
+                subcomments = SubComment.objects(parent_comment=comment_dict['comment_id'])
+                comment_dict['subcomments'] = [MessageManager.subcomment_to_dict(subcomment) for subcomment in
+                                               subcomments]
+                print(f"Retrieved {len(subcomments)} subcomments for comment with ID {comment_dict['comment_id']}.")
+
+            messages_dicts.append(message_dict)
+
         return {
-            'messages': [MessageManager.message_to_dict(message) for message in recent_messages_objects],
+            'messages': messages_dicts,
             'hasMoreMessages': has_more_messages
         }
 

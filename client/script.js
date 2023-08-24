@@ -109,17 +109,20 @@ const loadRecentMessages = () => {
     offset += limit;
 };
 const displayRecentMessages = (data) => {
+    console.log("displayRecentMessages called with data:", data);
+
     const tweetsWrapper = document.getElementById('tweets-wrapper');
 
     const wasAtBottom = isWrapperAtBottom(tweetsWrapper);
 
     data.messages.forEach(message => {
+        console.log("Processing message:", message);
+
         // Проверка на существование твита
         const existingTweet = document.querySelector(`.tweet-container[data-tweet-id="${message.message_id}"]`);
+        console.log("Existing tweet:", existingTweet);
 
-        if (existingTweet) {
-            existingTweet.setAttribute('data-tweet-id', message.message_id); // Обновляем ID твита в DOM
-        } else {
+        if (!existingTweet) {
             const tweetHTML = generateTweetHTML(message);
             const newTweetElement = document.createElement('div');
             newTweetElement.innerHTML = tweetHTML;
@@ -129,6 +132,9 @@ const displayRecentMessages = (data) => {
             } else {
                 tweetsWrapper.insertBefore(newTweetElement, tweetsWrapper.firstChild); // Новые сообщения вставляем в самом верху
             }
+            addCommentsToTweet(message, newTweetElement);
+        } else {
+            addCommentsToTweet(message, existingTweet);
         }
     });
 
@@ -151,6 +157,52 @@ const displayRecentMessages = (data) => {
 
     loadingOlderTweets = false;
 };
+const addCommentsToTweet = (message, tweetContainerElement) => {
+    console.log("addCommentsToTweet called with message:", message);
+    message.comments.forEach(commentData => {
+        const newCommentHTML = generateCommentHTML(commentData);
+        const newCommentElement = document.createElement('div');
+        newCommentElement.innerHTML = newCommentHTML;
+
+        let commentsContainer = tweetContainerElement.querySelector('.comments');
+
+        if (!commentsContainer) {
+            commentsContainer = document.createElement('div');
+            commentsContainer.className = 'comments';
+            const tweetElement = tweetContainerElement.querySelector('.tweet');
+            tweetElement.insertAdjacentElement('afterend', commentsContainer); // Добавляем после .tweet, но внутри .tweet-container
+        }
+
+        commentsContainer.prepend(newCommentElement);
+        console.log("Added comment to DOM:", newCommentElement);
+
+        // Добавляем сабкомментарии для каждого комментария
+        addSubcommentsToComment(commentData, newCommentElement);
+        updateCommentCount(tweetContainerElement);
+    });
+}
+const addSubcommentsToComment = (commentData, parentComment) => {
+    console.log("addSubcommentsToComment called with commentData:", commentData);
+    commentData.subcomments.forEach(subcommentData => {
+        const newSubcommentHTML = generateCommentHTML(subcommentData, true);
+        const newSubcommentElement = document.createElement('div');
+        newSubcommentElement.innerHTML = newSubcommentHTML;
+
+        let subcommentsContainer = parentComment.querySelector('.subcomments');
+        if (!subcommentsContainer) {
+            subcommentsContainer = document.createElement('div');
+            subcommentsContainer.className = 'subcomments';
+            parentComment.appendChild(subcommentsContainer);
+        }
+        subcommentsContainer.prepend(newSubcommentElement);
+        console.log("Added subcomment to DOM:", newSubcommentElement);
+
+        const replyButton = parentComment.querySelector('.reply-button');
+        if (replyButton) {
+            updateSubcommentCount(replyButton);
+        }
+    });
+}
 const displayNewComment = (data) => {
     const newCommentHTML = generateCommentHTML(data);
     const newCommentElement = document.createElement('div');
