@@ -10,21 +10,21 @@ socket.on('connect', () => {
     socket.emit('join', {room: 'room'});
 });
 socket.on('new tweet', data => {
-    console.log("Received new tweet event:", data);
     displayRecentMessages({messages: [data], hasMoreMessages: true});
 });
 socket.on('new comment', data => {
-    console.log("Received new comment event:", data);
     displayNewComment(data);
 });
 socket.on('new subcomment', data => {
-    console.log("Received new subcomment event:", data);
     displayNewSubcomment(data);
 });
 socket.on('update message', data => {
-    const tweetElement = document.querySelector(`.tweet[data-tweet-id="${data.message_id}"]`);
-    if (tweetElement) {
-        const contentElement = getContentElement(tweetElement);
+    // Находим контейнер твита
+    const tweetContainer = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
+
+    // Если контейнер найден, ищем внутри него элемент с содержимым
+    if (tweetContainer) {
+        const contentElement = tweetContainer.querySelector('.tweet-content');
         contentElement.textContent = data.new_content;
     }
 });
@@ -36,7 +36,7 @@ socket.on('update comment', data => {
     }
 });
 socket.on('update subcomment', data => {
-    const subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.subcomment_id}"]`);
+    const subcommentElement = document.querySelector(`.comment[data-subcomment-id="${data.subcomment_id}"]`);
     if (subcommentElement) {
         const contentElement = getContentElement(subcommentElement);
         contentElement.textContent = data.new_content;
@@ -130,18 +130,15 @@ const loadRecentMessages = () => {
     offset += limit;
 };
 const displayRecentMessages = (data) => {
-    console.log("displayRecentMessages called with data:", data);
 
     const tweetsWrapper = document.getElementById('tweets-wrapper');
 
     const wasAtBottom = isWrapperAtBottom(tweetsWrapper);
 
     data.messages.forEach(message => {
-        console.log("Processing message:", message);
 
         // Проверка на существование твита
         const existingTweet = document.querySelector(`.tweet-container[data-tweet-id="${message.message_id}"]`);
-        console.log("Existing tweet:", existingTweet);
 
         if (!existingTweet) {
             const tweetHTML = generateTweetHTML(message);
@@ -179,7 +176,6 @@ const displayRecentMessages = (data) => {
     loadingOlderTweets = false;
 };
 const addCommentsToTweet = (message, tweetContainerElement) => {
-    console.log("addCommentsToTweet called with message:", message);
     message.comments.forEach(commentData => {
         const existingComment = tweetContainerElement.querySelector(`.comment[data-comment-id="${commentData.comment_id}"]`);
         if (!existingComment) {
@@ -197,7 +193,6 @@ const addCommentsToTweet = (message, tweetContainerElement) => {
             }
 
             commentsContainer.prepend(newCommentElement);
-            console.log("Added comment to DOM:", newCommentElement);
 
             // Добавляем сабкомментарии для каждого комментария
             addSubcommentsToComment(commentData, newCommentElement);
@@ -206,7 +201,6 @@ const addCommentsToTweet = (message, tweetContainerElement) => {
     });
 }
 const addSubcommentsToComment = (commentData, parentComment) => {
-    console.log("addSubcommentsToComment called with commentData:", commentData);
     commentData.subcomments.forEach(subcommentData => {
         const existingSubcomment = parentComment.querySelector(`.comment[data-subcomment-id="${subcommentData.subcomment_id}"]`);
         if (!existingSubcomment) {
@@ -221,7 +215,6 @@ const addSubcommentsToComment = (commentData, parentComment) => {
                 parentComment.appendChild(subcommentsContainer);
             }
             subcommentsContainer.prepend(newSubcommentElement);
-            console.log("Added subcomment to DOM:", newSubcommentElement);
 
             const replyButton = parentComment.querySelector('.reply-button');
             if (replyButton) {
