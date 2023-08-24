@@ -21,6 +21,27 @@ socket.on('new subcomment', data => {
     console.log("Received new subcomment event:", data);
     displayNewSubcomment(data);
 });
+socket.on('update message', data => {
+    const tweetElement = document.querySelector(`.tweet[data-tweet-id="${data.message_id}"]`);
+    if (tweetElement) {
+        const contentElement = getContentElement(tweetElement);
+        contentElement.textContent = data.new_content;
+    }
+});
+socket.on('update comment', data => {
+    const commentElement = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
+    if (commentElement) {
+        const contentElement = getContentElement(commentElement);
+        contentElement.textContent = data.new_content;
+    }
+});
+socket.on('update subcomment', data => {
+    const subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.subcomment_id}"]`);
+    if (subcommentElement) {
+        const contentElement = getContentElement(subcommentElement);
+        contentElement.textContent = data.new_content;
+    }
+});
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
@@ -430,6 +451,30 @@ const saveEdit = (button) => {
     const contentElement = getContentElement(parentContainer);
     const textarea = contentElement.querySelector('.edit-textarea');
     const editedContent = textarea.value;
+    const currentUserID = getCurrentUserId();
+
+    // Определяем, что именно редактируется, чтобы отправить правильное событие
+    if (parentContainer.classList.contains('tweet')) {
+        socket.emit('update message', {
+            message_id: parentContainer.getAttribute('data-tweet-id'),
+            user_id: currentUserID,
+            new_content: editedContent
+        });
+    } else if (parentContainer.classList.contains('comment')) {
+        socket.emit('update comment', {
+            comment_id: parentContainer.getAttribute('data-comment-id'),
+            user_id: currentUserID,
+            new_content: editedContent
+        });
+    } else if (parentContainer.classList.contains('subcomment')) {
+        socket.emit('update subcomment', {
+            subcomment_id: parentContainer.getAttribute('data-subcomment-id'),
+            user_id: currentUserID,
+            new_content: editedContent
+        });
+    }
+
+    // Пока что просто обновляем содержимое на клиенте
     contentElement.textContent = editedContent;
 };
 const cancelEdit = (button) => {
