@@ -181,46 +181,52 @@ const displayRecentMessages = (data) => {
 const addCommentsToTweet = (message, tweetContainerElement) => {
     console.log("addCommentsToTweet called with message:", message);
     message.comments.forEach(commentData => {
-        const newCommentHTML = generateCommentHTML(commentData);
-        const newCommentElement = document.createElement('div');
-        newCommentElement.innerHTML = newCommentHTML;
+        const existingComment = tweetContainerElement.querySelector(`.comment[data-comment-id="${commentData.comment_id}"]`);
+        if (!existingComment) {
+            const newCommentHTML = generateCommentHTML(commentData);
+            const newCommentElement = document.createElement('div');
+            newCommentElement.innerHTML = newCommentHTML;
 
-        let commentsContainer = tweetContainerElement.querySelector('.comments');
+            let commentsContainer = tweetContainerElement.querySelector('.comments');
 
-        if (!commentsContainer) {
-            commentsContainer = document.createElement('div');
-            commentsContainer.className = 'comments';
-            const tweetElement = tweetContainerElement.querySelector('.tweet');
-            tweetElement.insertAdjacentElement('afterend', commentsContainer); // Добавляем после .tweet, но внутри .tweet-container
+            if (!commentsContainer) {
+                commentsContainer = document.createElement('div');
+                commentsContainer.className = 'comments';
+                const tweetElement = tweetContainerElement.querySelector('.tweet');
+                tweetElement.insertAdjacentElement('afterend', commentsContainer);
+            }
+
+            commentsContainer.prepend(newCommentElement);
+            console.log("Added comment to DOM:", newCommentElement);
+
+            // Добавляем сабкомментарии для каждого комментария
+            addSubcommentsToComment(commentData, newCommentElement);
+            updateCommentCount(tweetContainerElement);
         }
-
-        commentsContainer.prepend(newCommentElement);
-        console.log("Added comment to DOM:", newCommentElement);
-
-        // Добавляем сабкомментарии для каждого комментария
-        addSubcommentsToComment(commentData, newCommentElement);
-        updateCommentCount(tweetContainerElement);
     });
 }
 const addSubcommentsToComment = (commentData, parentComment) => {
     console.log("addSubcommentsToComment called with commentData:", commentData);
     commentData.subcomments.forEach(subcommentData => {
-        const newSubcommentHTML = generateCommentHTML(subcommentData, true);
-        const newSubcommentElement = document.createElement('div');
-        newSubcommentElement.innerHTML = newSubcommentHTML;
+        const existingSubcomment = parentComment.querySelector(`.comment[data-subcomment-id="${subcommentData.subcomment_id}"]`);
+        if (!existingSubcomment) {
+            const newSubcommentHTML = generateCommentHTML(subcommentData, true);
+            const newSubcommentElement = document.createElement('div');
+            newSubcommentElement.innerHTML = newSubcommentHTML;
 
-        let subcommentsContainer = parentComment.querySelector('.subcomments');
-        if (!subcommentsContainer) {
-            subcommentsContainer = document.createElement('div');
-            subcommentsContainer.className = 'subcomments';
-            parentComment.appendChild(subcommentsContainer);
-        }
-        subcommentsContainer.prepend(newSubcommentElement);
-        console.log("Added subcomment to DOM:", newSubcommentElement);
+            let subcommentsContainer = parentComment.querySelector('.subcomments');
+            if (!subcommentsContainer) {
+                subcommentsContainer = document.createElement('div');
+                subcommentsContainer.className = 'subcomments';
+                parentComment.appendChild(subcommentsContainer);
+            }
+            subcommentsContainer.prepend(newSubcommentElement);
+            console.log("Added subcomment to DOM:", newSubcommentElement);
 
-        const replyButton = parentComment.querySelector('.reply-button');
-        if (replyButton) {
-            updateSubcommentCount(replyButton);
+            const replyButton = parentComment.querySelector('.reply-button');
+            if (replyButton) {
+                updateSubcommentCount(replyButton);
+            }
         }
     });
 }
@@ -455,24 +461,26 @@ const saveEdit = (button) => {
 
     // Определяем, что именно редактируется, чтобы отправить правильное событие
     if (parentContainer.classList.contains('tweet')) {
+        const tweetContainer = parentContainer.closest('.tweet-container');
         socket.emit('update message', {
-            message_id: parentContainer.getAttribute('data-tweet-id'),
+            message_id: tweetContainer.getAttribute('data-tweet-id'),
             user_id: currentUserID,
             new_content: editedContent
         });
-    } else if (parentContainer.classList.contains('comment')) {
+    } else if (parentContainer.classList.contains('comment') && !parentContainer.hasAttribute('data-subcomment-id')) {
         socket.emit('update comment', {
             comment_id: parentContainer.getAttribute('data-comment-id'),
             user_id: currentUserID,
             new_content: editedContent
         });
-    } else if (parentContainer.classList.contains('subcomment')) {
+    } else if (parentContainer.classList.contains('comment') && parentContainer.hasAttribute('data-subcomment-id')) {
         socket.emit('update subcomment', {
             subcomment_id: parentContainer.getAttribute('data-subcomment-id'),
             user_id: currentUserID,
             new_content: editedContent
         });
     }
+
 
     // Пока что просто обновляем содержимое на клиенте
     contentElement.textContent = editedContent;
