@@ -37,6 +37,7 @@ class UserService:
             message = Message.objects.get(id=message_id)
         except DoesNotExist:
             raise ValueError("Message does not exist")
+
         if message.user.forum_id == user_id or user_id in ADMIN_IDS:
             message.delete()
         else:
@@ -60,9 +61,15 @@ class UserService:
         return str(new_comment.id)
 
     def delete_comment(self, comment_id: str, user_id: int) -> None:
-        comment = Comment.objects.get(id=comment_id)
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except DoesNotExist:
+            raise ValueError("Comment does not exist")
+
         if comment.user.forum_id == user_id or user_id in ADMIN_IDS:
             comment.delete()
+        else:
+            raise PermissionError("User does not have permission to delete this comment")
 
     def update_comment(self, comment_id: str, user_id: int, new_content: str) -> None:
         comment = Comment.objects.get(id=comment_id)
@@ -78,9 +85,15 @@ class UserService:
         return str(new_subcomment.id)
 
     def delete_subcomment(self, subcomment_id: str, user_id: int) -> None:
-        subcomment = SubComment.objects.get(id=subcomment_id)
+        try:
+            subcomment = SubComment.objects.get(id=subcomment_id)
+        except DoesNotExist:
+            raise ValueError("Subcomment does not exist")
+
         if subcomment.user.forum_id == user_id or user_id in ADMIN_IDS:
             subcomment.delete()
+        else:
+            raise PermissionError("User does not have permission to delete this subcomment")
 
     def edit_subcomment(self, subcomment_id: str, user_id: int, new_content: str) -> None:
         user = User.objects.get(forum_id=user_id)

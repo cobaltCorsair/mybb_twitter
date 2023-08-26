@@ -36,10 +36,28 @@ socket.on('update comment', data => {
     }
 });
 socket.on('update subcomment', data => {
-    const subcommentElement = document.querySelector(`.comment[data-subcomment-id="${data.subcomment_id}"]`);
+    const subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.subcomment_id}"]`);
     if (subcommentElement) {
         const contentElement = getContentElement(subcommentElement);
         contentElement.textContent = data.new_content;
+    }
+});
+socket.on('delete message', data => {
+    const tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
+    if (tweetElement) {
+        tweetElement.remove();
+    }
+});
+socket.on('delete comment', data => {
+    const commentElement = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
+    if (commentElement) {
+        commentElement.remove();
+    }
+});
+socket.on('delete subcomment', data => {
+    const subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.subcomment_id}"]`);
+    if (subcommentElement) {
+        subcommentElement.remove();
     }
 });
 // ================================
@@ -89,23 +107,28 @@ const generateCommentHTML = (commentData, isSubcomment = false) => {
     `;
 
     const commentIdAttribute = isSubcomment ? `data-subcomment-id="${commentData.subcomment_id}"` : `data-comment-id="${commentData.comment_id}"`;
+    const commentClassName = isSubcomment ? 'subcomment' : 'comment';
+    const commentHeaderClassName = isSubcomment ? 'subcomment-header' : 'comment-header';
+    const commentContentClassName = isSubcomment ? 'subcomment-content' : 'comment-content';
+    const commentTimeDateClassName = isSubcomment ? 'subcomment-time-date' : 'comment-time-date';
+    const commentActionsClassName = isSubcomment ? 'subcomment-actions' : 'comment-actions';
 
     return `
-        <div class="comment" ${commentIdAttribute}>
+        <div class="${commentClassName}" ${commentIdAttribute}>
             <div class="line-container">
                 <span class="line-dot"></span>
             </div>
-            <div class="comment-header">
+            <div class="${commentHeaderClassName}">
                 <img src="${commentData.avatar_url}" alt="User Avatar">
                 <span class="comment-username">${commentData.username}</span>
             </div>
-            <div class="comment-content">
+            <div class="${commentContentClassName}">
                 ${commentData.content}
             </div>
-            <div class="comment-time-date">
+            <div class="${commentTimeDateClassName}">
                 <span class="comment-time">${commentData.created_at}</span>
             </div>
-            <div class="comment-actions">
+            <div class="${commentActionsClassName}">
                 <button class="like-button" onclick="toggleLike(this)"><i class="far fa-heart"></i></button>
                 <span class="like-count">0</span>
                 <button class="reply-button" onclick="displayReplyForm(this)"><i class="fas fa-pencil-alt"></i></button>
@@ -318,14 +341,14 @@ const toggleComments = button => {
     if (commentsSection && commentsSection.classList.contains('reply-form-container')) {
         commentsSection = commentsSection.nextElementSibling;
     }
-    commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+    commentsSection.style.display = (commentsSection.style.display === 'none' || !commentsSection.style.display) ? 'block' : 'none';
 };
 const toggleSubcomments = button => {
     let subcommentsSection = button.closest('.comment').nextElementSibling;
     if (subcommentsSection && subcommentsSection.classList.contains('reply-form-container')) {
         subcommentsSection = subcommentsSection.nextElementSibling;
     }
-    subcommentsSection.style.display = subcommentsSection.style.display === 'none' ? 'block' : 'none';
+    subcommentsSection.style.display = (subcommentsSection.style.display === 'none' || !subcommentsSection.style.display) ? 'block' : 'none';
 };
 const toggleLike = (button) => {
     const parentElement = button.parentElement;
@@ -353,19 +376,27 @@ const deleteElement = (button) => {
         return;
     }
 
+    const currentUserID = getCurrentUserId();
+
+    // Определяем тип элемента для удаления и отправляем соответствующее событие через сокет
     if (elementToDelete.classList.contains('tweet')) {
         const parentContainer = elementToDelete.closest('.tweet-container');
         if (parentContainer) {
-            parentContainer.remove();
-        } else {
-            elementToDelete.remove();
+            socket.emit('delete message', {
+                message_id: parentContainer.getAttribute('data-tweet-id'),
+                user_id: currentUserID
+            });
         }
     } else if (elementToDelete.classList.contains('comment')) {
         const subcommentsSection = elementToDelete.nextElementSibling;
         if (subcommentsSection && subcommentsSection.classList.contains('subcomments')) {
             subcommentsSection.remove();
         }
-        elementToDelete.remove();
+
+        socket.emit('delete comment', {
+            comment_id: elementToDelete.getAttribute('data-comment-id'),
+            user_id: currentUserID
+        });
 
         // Update comment count for the tweet
         const parentTweet = elementToDelete.closest(".tweet");
@@ -374,7 +405,10 @@ const deleteElement = (button) => {
         }
 
     } else if (elementToDelete.classList.contains('subcomment')) {
-        elementToDelete.remove();
+        socket.emit('delete subcomment', {
+            subcomment_id: elementToDelete.getAttribute('data-subcomment-id'),
+            user_id: currentUserID
+        });
 
         // Update subcomment count for the comment
         const parentComment = elementToDelete.closest(".comment");
@@ -466,7 +500,7 @@ const saveEdit = (button) => {
             user_id: currentUserID,
             new_content: editedContent
         });
-    } else if (parentContainer.classList.contains('comment') && parentContainer.hasAttribute('data-subcomment-id')) {
+    } else if (parentContainer.classList.contains('subcomment') && parentContainer.hasAttribute('data-subcomment-id')) {
         socket.emit('update subcomment', {
             subcomment_id: parentContainer.getAttribute('data-subcomment-id'),
             user_id: currentUserID,
