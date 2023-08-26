@@ -375,47 +375,49 @@ const deleteElement = (button) => {
         console.error("Не удалось найти элемент для удаления!");
         return;
     }
-
     const currentUserID = getCurrentUserId();
 
-    // Определяем тип элемента для удаления и отправляем соответствующее событие через сокет
     if (elementToDelete.classList.contains('tweet')) {
         const parentContainer = elementToDelete.closest('.tweet-container');
         if (parentContainer) {
+            const messageId = parentContainer.getAttribute('data-tweet-id');
             socket.emit('delete message', {
-                message_id: parentContainer.getAttribute('data-tweet-id'),
+                message_id: messageId,
                 user_id: currentUserID
             });
+            elementToDelete.remove();
         }
     } else if (elementToDelete.classList.contains('comment')) {
-        const subcommentsSection = elementToDelete.nextElementSibling;
-        if (subcommentsSection && subcommentsSection.classList.contains('subcomments')) {
-            subcommentsSection.remove();
-        }
+        const tweetContainer = elementToDelete.closest('.tweet-container');
+        const commentId = elementToDelete.getAttribute('data-comment-id');
 
         socket.emit('delete comment', {
-            comment_id: elementToDelete.getAttribute('data-comment-id'),
+            comment_id: commentId,
             user_id: currentUserID
         });
 
-        // Update comment count for the tweet
-        const parentTweet = elementToDelete.closest(".tweet");
-        if (parentTweet) {
-            updateCommentCount(parentTweet);
+        elementToDelete.parentNode.remove();
+
+        if (tweetContainer) {
+            updateCommentCount(tweetContainer);
         }
-
     } else if (elementToDelete.classList.contains('subcomment')) {
+        const subcommentsContainer = elementToDelete.closest('.subcomments');
+        const parentComment = subcommentsContainer ? subcommentsContainer.previousElementSibling : null;
+        const subcommentId = elementToDelete.getAttribute('data-subcomment-id');
+
         socket.emit('delete subcomment', {
-            subcomment_id: elementToDelete.getAttribute('data-subcomment-id'),
+            subcomment_id: subcommentId,
             user_id: currentUserID
         });
 
-        // Update subcomment count for the comment
-        const parentComment = elementToDelete.closest(".comment");
+        elementToDelete.parentNode.remove();
+
         if (parentComment) {
-            updateSubcommentCount(parentComment);
+            updateSubcommentCount(parentComment.querySelector('.reply-button'));
         }
     }
+
 };
 const confirmAndExecute = (message, action, button) => {
     if (confirm(message)) {
