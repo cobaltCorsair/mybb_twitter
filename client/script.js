@@ -51,13 +51,21 @@ socket.on('delete message', data => {
 socket.on('delete comment', data => {
     const commentElement = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
     if (commentElement) {
-        commentElement.remove();
+        const tweetContainer = commentElement.closest('.tweet-container');
+        commentElement.parentNode.remove();
+        if (tweetContainer) {
+            updateCommentCount(tweetContainer);
+        }
     }
 });
 socket.on('delete subcomment', data => {
     const subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.subcomment_id}"]`);
     if (subcommentElement) {
-        subcommentElement.remove();
+        const parentComment = subcommentElement.closest('.comment');
+        subcommentElement.parentNode.remove();
+        if (parentComment) {
+            updateSubcommentCount(parentComment.querySelector('.reply-button'));
+        }
     }
 });
 // ================================
@@ -341,14 +349,18 @@ const toggleComments = button => {
     if (commentsSection && commentsSection.classList.contains('reply-form-container')) {
         commentsSection = commentsSection.nextElementSibling;
     }
-    commentsSection.style.display = (commentsSection.style.display === 'none' || !commentsSection.style.display) ? 'block' : 'none';
+    if (commentsSection) {
+        commentsSection.style.display = (commentsSection.style.display === 'none' || !commentsSection.style.display) ? 'block' : 'none';
+    }
 };
 const toggleSubcomments = button => {
     let subcommentsSection = button.closest('.comment').nextElementSibling;
     if (subcommentsSection && subcommentsSection.classList.contains('reply-form-container')) {
         subcommentsSection = subcommentsSection.nextElementSibling;
     }
-    subcommentsSection.style.display = (subcommentsSection.style.display === 'none' || !subcommentsSection.style.display) ? 'block' : 'none';
+    if (subcommentsSection) {
+        subcommentsSection.style.display = (subcommentsSection.style.display === 'none' || !subcommentsSection.style.display) ? 'block' : 'none';
+    }
 };
 const toggleLike = (button) => {
     const parentElement = button.parentElement;
@@ -358,11 +370,15 @@ const toggleLike = (button) => {
         return;
     }
     let currentLikes = parseInt(likeCounter.textContent, 10);
+    const messageId = parentElement.closest('.tweet-container').getAttribute('data-tweet-id');
+    const userId = getCurrentUserId();
 
     if (button.classList.contains('liked')) {
         currentLikes--;
+        socket.emit('remove like message', { user_id: userId, message_id: messageId });
     } else {
         currentLikes++;
+        socket.emit('like message', { user_id: userId, message_id: messageId });
     }
 
     likeCounter.textContent = currentLikes;
