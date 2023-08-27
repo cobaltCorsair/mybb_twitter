@@ -133,9 +133,11 @@ class UserService:
             posts_data.append(post_data)
         return posts_data
 
-    def get_likes(self, message_id: str) -> int:
+    def get_likes(self, user_id: int, message_id: str) -> dict:
         message = Message.objects.get(id=message_id)
-        return sum(like.value for like in message.likes)
+        total_likes = sum(like.value for like in message.likes)
+        user_liked = any(like for like in message.likes if like.user.forum_id == user_id)
+        return {"total": total_likes, "user_liked": user_liked}
 
     def remove_like(self, user_id: int, message_id: str) -> None:
         user = User.objects.get(forum_id=user_id)

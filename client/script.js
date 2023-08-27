@@ -68,6 +68,22 @@ socket.on('delete subcomment', data => {
         }
     }
 });
+socket.on('message likes', (data) => {
+    console.log(data);
+    const tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
+    if (tweetElement) {
+        const likeCounter = tweetElement.querySelector(".like-count");
+        const likeButton = tweetElement.querySelector(".like-button");
+        if (likeCounter) {
+            likeCounter.textContent = data.likes.total;
+        }
+        if (data.likes.user_liked) {
+            likeButton.classList.add('liked');
+        } else {
+            likeButton.classList.remove('liked');
+        }
+    }
+});
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
@@ -185,6 +201,7 @@ const displayRecentMessages = (data) => {
         } else {
             addCommentsToTweet(message, existingTweet);
         }
+        requestLikesForMessage(message);
     });
 
     if (!loadingOlderTweets) {
@@ -291,6 +308,9 @@ const displayNewSubcomment = (data) => {
     const replyButton = parentComment.querySelector('.reply-button');
     updateSubcommentCount(replyButton);
 };
+const requestLikesForMessage = (data) => {
+    socket.emit('get message likes', data);
+};
 const initTweetLoadingEvents = () => {
     socket.on('recent messages', displayRecentMessages);
     document.getElementById('load-more-btn').addEventListener('click', loadRecentMessages);
@@ -374,10 +394,8 @@ const toggleLike = (button) => {
     const userId = getCurrentUserId();
 
     if (button.classList.contains('liked')) {
-        currentLikes--;
         socket.emit('remove like message', { user_id: userId, message_id: messageId });
     } else {
-        currentLikes++;
         socket.emit('like message', { user_id: userId, message_id: messageId });
     }
 

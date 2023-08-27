@@ -66,6 +66,7 @@ class MessageManager:
                 comment.created_at) if comment.created_at else None,
             'username': comment.user.username if comment.user else None,
             'avatar_url': comment.user.avatar_url if comment.user else None,
+            'likes': comment.user.likes if comment.likes else None,
         }
 
     @staticmethod
@@ -77,4 +78,5 @@ class MessageManager:
                 subcomment.created_at) if subcomment.created_at else None,
             'username': subcomment.user.username if subcomment.user else None,
             'avatar_url': subcomment.user.avatar_url if subcomment.user else None,
+            'likes': subcomment.user.likes if subcomment.likes else None,
         }
