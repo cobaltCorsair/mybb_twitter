@@ -69,11 +69,15 @@ socket.on('delete subcomment', data => {
     }
 });
 socket.on('message likes', (data) => {
-    console.log(data);
-    const tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
-    if (tweetElement) {
-        const likeCounter = tweetElement.querySelector(".like-count");
-        const likeButton = tweetElement.querySelector(".like-button");
+    let tweetElement = document.querySelector(`.tweet-container[data-tweet-id="${data.message_id}"]`);
+    let commentElement = document.querySelector(`.comment[data-comment-id="${data.message_id}"]`);
+    let subcommentElement = document.querySelector(`.subcomment[data-subcomment-id="${data.message_id}"]`);
+
+    let targetElement = tweetElement || commentElement || subcommentElement;
+
+    if (targetElement) {
+        const likeCounter = targetElement.querySelector(".like-count");
+        const likeButton = targetElement.querySelector(".like-button");
         if (likeCounter) {
             likeCounter.textContent = data.likes.total;
         }
@@ -201,7 +205,8 @@ const displayRecentMessages = (data) => {
         } else {
             addCommentsToTweet(message, existingTweet);
         }
-        requestLikesForMessage(message);
+        console.log(message);
+        requestLikesForMessage(message, "tweet");
     });
 
     if (!loadingOlderTweets) {
@@ -246,6 +251,8 @@ const addCommentsToTweet = (message, tweetContainerElement) => {
             addSubcommentsToComment(commentData, newCommentElement);
             updateCommentCount(tweetContainerElement);
         }
+        console.log(commentData);
+        requestLikesForMessage(commentData, "comment");
     });
 }
 const addSubcommentsToComment = (commentData, parentComment) => {
@@ -269,6 +276,8 @@ const addSubcommentsToComment = (commentData, parentComment) => {
                 updateSubcommentCount(replyButton);
             }
         }
+        console.log(subcommentData);
+        requestLikesForMessage(subcommentData, "subcomment");
     });
 }
 const displayNewComment = (data) => {
@@ -308,8 +317,11 @@ const displayNewSubcomment = (data) => {
     const replyButton = parentComment.querySelector('.reply-button');
     updateSubcommentCount(replyButton);
 };
-const requestLikesForMessage = (data) => {
-    socket.emit('get message likes', data);
+const requestLikesForMessage = (data, messageType) => {
+    data.user_id = getCurrentUserId();
+    data.message_type = messageType;
+    data.message_id = data.message_id || data.comment_id || data.subcomment_id;
+    socket.emit('get message likes', data.user_id, data.message_id, messageType);
 };
 const initTweetLoadingEvents = () => {
     socket.on('recent messages', displayRecentMessages);
@@ -383,24 +395,38 @@ const toggleSubcomments = button => {
     }
 };
 const toggleLike = (button) => {
-    const parentElement = button.parentElement;
-    const likeCounter = parentElement.querySelector(".like-count");
-    if (!likeCounter) {
-        console.error("Элемент счётчика лайков не найден!");
+    const parentElement = button.closest(".comment") || button.closest(".subcomment") || button.closest(".tweet-container");
+
+    if (!parentElement) {
+        console.error("Не удалось определить родительский элемент!");
         return;
     }
-    let currentLikes = parseInt(likeCounter.textContent, 10);
-    const messageId = parentElement.closest('.tweet-container').getAttribute('data-tweet-id');
-    const userId = getCurrentUserId();
 
-    if (button.classList.contains('liked')) {
-        socket.emit('remove like message', { user_id: userId, message_id: messageId });
-    } else {
-        socket.emit('like message', { user_id: userId, message_id: messageId });
+    let messageId;
+    let messageType;
+    if (parentElement.classList.contains('tweet-container')) {
+        messageId = parentElement.getAttribute('data-tweet-id');
+        messageType = 'tweet';
+    } else if (parentElement.classList.contains('comment')) {
+        messageId = parentElement.getAttribute('data-comment-id');
+        messageType = 'comment';
+    } else if (parentElement.classList.contains('subcomment')) {
+        messageId = parentElement.getAttribute('data-subcomment-id');
+        messageType = 'subcomment';
     }
 
-    likeCounter.textContent = currentLikes;
-    button.classList.toggle('liked');
+    const userId = getCurrentUserId();
+    const likeCounter = parentElement.querySelector(".like-count");
+
+    if (!likeCounter) {
+        return;
+    }
+
+    if (button.classList.contains('liked')) {
+        socket.emit('remove like message', userId, messageId, messageType);
+    } else {
+        socket.emit('like message', userId, messageId, messageType);
+    }
 };
 const deleteElement = (button) => {
     const elementToDelete = button.closest(".tweet") || button.closest(".comment") || button.closest(".subcomment");

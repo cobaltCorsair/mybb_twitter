@@ -105,10 +105,22 @@ class UserService:
         subcomment.content = new_content
         subcomment.save()
 
-    def like(self, user_id: int, message_id: str, value: int) -> None:
+    def get_model_by_type(self, message_type: str):
+        MODEL_MAPPING = {
+            'tweet': Message,
+            'comment': Comment,
+            'subcomment': SubComment
+        }
+        model = MODEL_MAPPING.get(message_type)
+        if not model:
+            raise ValueError(f"Invalid message type: {message_type}")
+        return model
+
+    def like(self, user_id: int, message_id: str, message_type: str, value: int) -> None:
+        model = self.get_model_by_type(message_type)
         try:
             user = User.objects.get(forum_id=user_id)
-            message = Message.objects.get(id=message_id)
+            message = model.objects.get(id=message_id)
             # Check if the user has already liked the message
             if any(like for like in message.likes if like.user.forum_id == user_id):
                 raise ValueError("User has already liked this message")
@@ -117,6 +129,31 @@ class UserService:
             message.save()
         except DoesNotExist:
             raise ValueError("User or message does not exist")
+
+    def get_likes(self, user_id: int, message_id: str, message_type: str) -> dict:
+        model = self.get_model_by_type(message_type)
+        if not model:
+            raise ValueError("Invalid message type")
+
+        try:
+            message = model.objects.get(id=message_id)
+        except model.DoesNotExist:
+            raise ValueError(f"{message_type.capitalize()} with ID {message_id} does not exist")
+
+        total_likes = sum(like.value for like in message.likes)
+        user_liked = any(like for like in message.likes if like.user.forum_id == user_id)
+        return {"total": total_likes, "user_liked": user_liked}
+
+    def remove_like(self, user_id: int, message_id: str, message_type: str) -> None:
+        model = self.get_model_by_type(message_type)
+        user = User.objects.get(forum_id=user_id)
+        message = model.objects.get(id=message_id)
+        # Check if the user has liked the message
+        if any(like for like in message.likes if like.user.forum_id == user_id):
+            message.likes = [like for like in message.likes if like.user.forum_id != user_id]
+            message.save()
+        else:
+            raise ValueError("User has not liked this message")
 
     def get_user_posts(self, user_id: int) -> list:
         user_posts = Message.objects.filter(user_id=user_id).order_by('-date').limit(10)
@@ -132,22 +169,6 @@ class UserService:
             }
             posts_data.append(post_data)
         return posts_data
-
-    def get_likes(self, user_id: int, message_id: str) -> dict:
-        message = Message.objects.get(id=message_id)
-        total_likes = sum(like.value for like in message.likes)
-        user_liked = any(like for like in message.likes if like.user.forum_id == user_id)
-        return {"total": total_likes, "user_liked": user_liked}
-
-    def remove_like(self, user_id: int, message_id: str) -> None:
-        user = User.objects.get(forum_id=user_id)
-        message = Message.objects.get(id=message_id)
-        # Check if the user has liked the message
-        if any(like for like in message.likes if like.user.forum_id == user_id):
-            message.likes = [like for like in message.likes if like.user.forum_id != user_id]
-            message.save()
-        else:
-            raise ValueError("User has not liked this message")
 
     def ban_user(self, user_id: int) -> None:
         try:
