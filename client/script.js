@@ -205,7 +205,6 @@ const displayRecentMessages = (data) => {
         } else {
             addCommentsToTweet(message, existingTweet);
         }
-        console.log(message);
         requestLikesForMessage(message, "tweet");
     });
 
@@ -251,7 +250,6 @@ const addCommentsToTweet = (message, tweetContainerElement) => {
             addSubcommentsToComment(commentData, newCommentElement);
             updateCommentCount(tweetContainerElement);
         }
-        console.log(commentData);
         requestLikesForMessage(commentData, "comment");
     });
 }
@@ -276,7 +274,6 @@ const addSubcommentsToComment = (commentData, parentComment) => {
                 updateSubcommentCount(replyButton);
             }
         }
-        console.log(subcommentData);
         requestLikesForMessage(subcommentData, "subcomment");
     });
 }

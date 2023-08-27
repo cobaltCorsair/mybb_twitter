@@ -320,13 +320,17 @@ class LikeMessageView(BaseView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
-        return self.handle_like_message(data)
 
-    @socketio.on('like message')
-    def handle_like_message_socket(self, user_id, message_id, message_type):
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+        message_type: str = data.get('message_type')
         return self.handle_like_message(user_id, message_id, message_type)
 
-    def handle_like_message(self, user_id, message_id, message_type):
+    @socketio.on('like message')
+    def handle_like_message_socket(self, user_id: int, message_id: str, message_type: str):
+        return self.handle_like_message(user_id, message_id, message_type)
+
+    def handle_like_message(self, user_id: int, message_id: str, message_type: str):
         try:
             user_service.like(user_id, message_id, message_type, 1)  # Передаем message_type в функцию
             likes_data = user_service.get_likes(user_id, message_id, message_type)  # Передаем message_type в функцию
@@ -343,13 +347,17 @@ class RemoveLikeMessageView(BaseView):
         data: Optional[dict] = request.get_json()
         if data is None:
             return jsonify({"message": "No data provided"}), 400
-        return self.handle_remove_like(data)
 
-    @socketio.on('remove like message')
-    def handle_remove_like_socket(self, user_id, message_id, message_type):
+        user_id: int = data.get('user_id')
+        message_id: str = data.get('message_id')
+        message_type: str = data.get('message_type')
         return self.handle_remove_like(user_id, message_id, message_type)
 
-    def handle_remove_like(self, user_id, message_id, message_type):
+    @socketio.on('remove like message')
+    def handle_remove_like_socket(self, user_id: int, message_id: str, message_type: str):
+        return self.handle_remove_like(user_id, message_id, message_type)
+
+    def handle_remove_like(self, user_id: int, message_id: str, message_type: str):
         try:
             user_service.remove_like(user_id, message_id, message_type)  # Передаем message_type в функцию
             likes_data = user_service.get_likes(user_id, message_id, message_type)  # Передаем message_type в функцию
@@ -361,15 +369,14 @@ class RemoveLikeMessageView(BaseView):
 
 class GetMessageLikesView(BaseView):
     @cross_origin()
-    def get(self, user_id, message_id, message_type) -> tuple[Any, int]:
+    def get(self, user_id: int, message_id: str, message_type: str) -> tuple[Any, int]:
         return self.handle_get_likes(user_id, message_id, message_type)
 
     @socketio.on('get message likes')
-    def handle_get_likes_socket(self, user_id, message_id, message_type):
+    def handle_get_likes_socket(self, user_id: int, message_id: str, message_type: str):
         return self.handle_get_likes(user_id, message_id, message_type)
 
-    def handle_get_likes(self, user_id, message_id, message_type):
-        print(user_id, message_id, message_type)
+    def handle_get_likes(self, user_id: int, message_id: str, message_type: str):
         likes = user_service.get_likes(user_id, message_id, message_type)  # Передаем message_type в функцию
         self.socketio.emit('message likes', {"message_id": message_id, "likes": likes}, room='room')
         return jsonify({"likes": likes}), 200
