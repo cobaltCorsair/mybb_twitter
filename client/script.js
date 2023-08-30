@@ -88,6 +88,12 @@ socket.on('message likes', (data) => {
         }
     }
 });
+
+socket.on('update ignored users', data => {
+    const ignoredUsers = data.ignored_users; // Получаем игнорированных пользователей из ключа 'ignoredUsers'
+    // Вызываем функцию для обновления списка игнорированных пользователей
+    updateIgnoredUsers(ignoredUsers);
+});
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
@@ -694,6 +700,46 @@ const updateSubcommentCount = (replyButton) => {
         subcommentCountElem.textContent = 0;
     }
 };
+
+const addToBlacklist = (button) => {
+    // ! TODO: Необходимо добавить сюда обработку айди из кнопки
+    const userId = button.dataset.userId; // Получаем ID пользователя из атрибута data-user-id кнопки
+    const data = {
+        user_id: getCurrentUserId(),
+        ignored_user_id: userId
+    };
+
+    socket.emit('ignore user', data);
+}
+const updateIgnoredUsers = (ignoredUsers) => {
+    const blockedUsersPanel = document.getElementById('blockedUsersPanel');
+    blockedUsersPanel.innerHTML = '';
+
+    ignoredUsers.forEach((user) => {
+        const blockedUser = document.createElement('div');
+        blockedUser.classList.add('blocked-user');
+
+        const userAvatar = document.createElement('img');
+        userAvatar.src = getCurrentUserAvatarUrl(); // Заглушка: здесь получаем URL аватара пользователя
+        userAvatar.alt = 'User Avatar';
+
+        const userName = document.createElement('span');
+        userName.classList.add('nickname');
+        userName.innerText = getCurrentUsername(); // Заглушка: возвращает фиксированное имя.
+
+        const unblockUserButton = document.createElement('span');
+        unblockUserButton.classList.add('unblock-user');
+        unblockUserButton.innerText = '×';
+        unblockUserButton.onclick = () => unblockUser(user.id); // Здесь должна быть функция для удаления из игнор-листа
+
+        blockedUser.appendChild(userAvatar);
+        blockedUser.appendChild(userName);
+        blockedUser.appendChild(unblockUserButton);
+
+        blockedUsersPanel.appendChild(blockedUser);
+    });
+}
+
 // Функция-заглушка для получения ID текущего пользователя
 const getCurrentUserId = () => 1;  // Заглушка: возвращает фиксированный ID. Замените на реальный ID.
 // Функция-заглушка для получения имени текущего пользователя

@@ -488,7 +488,7 @@ class GetIgnoredUsersView(BaseView):
             ignored_users = user_service.get_ignored_users(user_id)
         except ValueError as e:
             return jsonify({"message": str(e)}), 400
-
+        self.socketio.emit('update ignored users', ignored_users, room='room')
         return jsonify({"ignored_users": ignored_users}), 200
 
 
