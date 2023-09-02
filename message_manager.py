@@ -46,7 +46,7 @@ class MessageManager:
         subcomments_count = subcomments_data[0]['count'] if subcomments_data else 0
 
         return {
-            'user_id': str(message.user.id) if message.user else None,
+            'user_id': str(message.user.forum_id) if message.user else None,
             'message_id': str(message.id),
             'content': message.content,
             'created_at': MessageManager.human_readable_time_difference(
@@ -61,7 +61,7 @@ class MessageManager:
     @staticmethod
     def comment_to_dict(comment):
         return {
-            'user_id': str(comment.user.id) if comment.user else None,
+            'user_id': str(comment.user.forum_id) if comment.user else None,
             'comment_id': str(comment.id),
             'content': comment.content,
             'created_at': MessageManager.human_readable_time_difference(
@@ -74,7 +74,7 @@ class MessageManager:
     @staticmethod
     def subcomment_to_dict(subcomment):
         return {
-            'user_id': str(subcomment.user.id) if subcomment.user else None,
+            'user_id': str(subcomment.user.forum_id) if subcomment.user else None,
             'subcomment_id': str(subcomment.id),
             'content': subcomment.content,
             'created_at': MessageManager.human_readable_time_difference(
