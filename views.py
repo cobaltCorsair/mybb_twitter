@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Optional
 from flask import request, jsonify
 from flask.views import MethodView
@@ -425,12 +424,10 @@ class IgnoreUserView(BaseView):
     @cross_origin()
     def post(self) -> tuple[Any, int]:
         data: Optional[dict] = request.get_json()
-        logging.debug(f"Received POST request with data: {data}")
         return self.handle_ignore_user(data)
 
     @socketio.on('ignore user')
     def handle_ignore_user_socket(self, data: dict):
-        logging.debug(f"Received 'ignore user' event with data: {data}")
         return self.handle_ignore_user(data)
 
     def handle_ignore_user(self, data: dict):
@@ -442,14 +439,14 @@ class IgnoreUserView(BaseView):
         try:
             user_service.ignore_user(user_id, ignored_user_id)
         except ValueError as e:
-            logging.error(f"Error while ignoring user: {str(e)}")
             return jsonify({"message": str(e)}), 400
 
-        logging.debug(f"User with id {ignored_user_id} has been added to ignore list of user {user_id}.")
+        # Отправляем обновленный список игнорируемых пользователей
+        ignored_users = user_service.get_ignored_users(user_id)
+        self.socketio.emit('update ignored users', ignored_users, room='room')
         self.socketio.emit('ignore user', data, room='room')
         return jsonify(
             {"message": f"User with id {ignored_user_id} has been added to ignore list of user {user_id}."}), 200
-
 
 
 class UnignoreUserView(BaseView):
@@ -484,7 +481,8 @@ class GetIgnoredUsersView(BaseView):
         return self.handle_get_ignored_users(user_id)
 
     @socketio.on('get ignored users')
-    def handle_get_ignored_users_socket(self, user_id: int):
+    def handle_get_ignored_users_socket(self, data: dict):
+        user_id = data.get('user_id')
         return self.handle_get_ignored_users(user_id)
 
     def handle_get_ignored_users(self, user_id: int):

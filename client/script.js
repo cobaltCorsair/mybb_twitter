@@ -88,12 +88,13 @@ socket.on('message likes', (data) => {
         }
     }
 });
-
 socket.on('update ignored users', data => {
-    const ignoredUsers = data.ignored_users; // Получаем игнорированных пользователей из ключа 'ignoredUsers'
-    // Вызываем функцию для обновления списка игнорированных пользователей
-    updateIgnoredUsers(ignoredUsers);
+    updateIgnoredUsers(data);
 });
+// Когда страница загружается
+window.onload = function () {
+    socket.emit('get ignored users', {user_id: getCurrentUserId()});
+}
 // ================================
 // TWEET LOADING FUNCTIONS
 // ================================
@@ -371,13 +372,6 @@ const clearNotifications = () => {
     const notificationPanel = document.getElementById("notificationPanel");
     notificationPanel.innerHTML = '<button class="clear-button" onclick="clearNotifications()">Clear All Notifications</button>';
     document.getElementById("notificationCount").textContent = "0";
-}
-const unblockUser = username => {
-    const blockedUsersPanel = document.getElementById("blockedUsersPanel");
-    const users = [...blockedUsersPanel.getElementsByClassName("blocked-user")];
-
-    const userToUnblock = users.find(user => user.textContent.includes(username));
-    if (userToUnblock) userToUnblock.remove();
 }
 const toggleComments = button => {
     let commentsSection = button.closest('.tweet').nextElementSibling;
@@ -700,37 +694,58 @@ const updateSubcommentCount = (replyButton) => {
         subcommentCountElem.textContent = 0;
     }
 };
-
 const addToBlacklist = (button) => {
-    // ! TODO: Необходимо добавить сюда обработку айди из кнопки
-    const userId = button.dataset.userId; // Получаем ID пользователя из атрибута data-user-id кнопки
+    const userId = button.dataset.userId;
     const data = {
         user_id: getCurrentUserId(),
         ignored_user_id: userId
     };
-
     socket.emit('ignore user', data);
+}
+const unblockUser = (userId) => {
+    const data = {
+        user_id: getCurrentUserId(),
+        ignored_user_id: parseInt(userId, 10)  // Преобразуем userId из строки в число
+    };
+    socket.emit('unignore user', data);
+
+    // Удаление пользователя из списка на клиенте
+    const blockedUsersPanel = document.getElementById("blockedUsersPanel");
+    const users = [...blockedUsersPanel.getElementsByClassName("blocked-user")];
+
+    const userToUnblock = users.find(user => user.dataset.userId === userId);  // Сравниваем как строки
+    if (userToUnblock) userToUnblock.remove();
+
+    // Проверка, пуст ли список после удаления
+    if (blockedUsersPanel.children.length === 0) {
+        blockedUsersPanel.innerHTML = '<div class="empty-list-message">Список игнорирования пуст.</div>';
+    }
 }
 const updateIgnoredUsers = (ignoredUsers) => {
     const blockedUsersPanel = document.getElementById('blockedUsersPanel');
     blockedUsersPanel.innerHTML = '';
 
     ignoredUsers.forEach((user) => {
+        console.log(user);
         const blockedUser = document.createElement('div');
         blockedUser.classList.add('blocked-user');
+        blockedUser.dataset.userId = user.id;
 
         const userAvatar = document.createElement('img');
-        userAvatar.src = getCurrentUserAvatarUrl(); // Заглушка: здесь получаем URL аватара пользователя
+        userAvatar.src = user.avatar_url; // Теперь используем URL аватара пользователя из данных сервера
         userAvatar.alt = 'User Avatar';
 
         const userName = document.createElement('span');
         userName.classList.add('nickname');
-        userName.innerText = getCurrentUsername(); // Заглушка: возвращает фиксированное имя.
+        userName.innerText = user.username; // Теперь используем никнейм пользователя из данных сервера
 
         const unblockUserButton = document.createElement('span');
         unblockUserButton.classList.add('unblock-user');
         unblockUserButton.innerText = '×';
-        unblockUserButton.onclick = () => unblockUser(user.id); // Здесь должна быть функция для удаления из игнор-листа
+        unblockUserButton.dataset.userId = user.id;
+        unblockUserButton.onclick = function () {
+            unblockUser(this.dataset.userId);
+        };
 
         blockedUser.appendChild(userAvatar);
         blockedUser.appendChild(userName);
@@ -738,8 +753,11 @@ const updateIgnoredUsers = (ignoredUsers) => {
 
         blockedUsersPanel.appendChild(blockedUser);
     });
-}
 
+    if (ignoredUsers.length === 0) {
+        blockedUsersPanel.innerHTML = '<div class="empty-list-message">Список игнорирования пуст.</div>';
+    }
+}
 // Функция-заглушка для получения ID текущего пользователя
 const getCurrentUserId = () => 1;  // Заглушка: возвращает фиксированный ID. Замените на реальный ID.
 // Функция-заглушка для получения имени текущего пользователя

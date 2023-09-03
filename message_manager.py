@@ -29,6 +29,14 @@ class MessageManager:
             return "только что"
 
     @staticmethod
+    def user_to_dict(user):
+        return {
+            "id": user.forum_id,
+            "username": user.username,
+            "avatar_url": user.avatar_url
+        }
+
+    @staticmethod
     def message_to_dict(message):
         comments_pipeline = [
             {"$match": {"message": message.id}},

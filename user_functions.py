@@ -226,7 +226,7 @@ class UserService:
             raise ValueError(f"User with id {user_id} does not exist")
 
         user = User.objects.get(forum_id=user_id)
-        return [ignored_user.forum_id for ignored_user in user.ignored_users]
+        return [MessageManager.user_to_dict(ignored_user) for ignored_user in user.ignored_users]
 
     def report_message(self, user_id: int, message_id: str, reason: str) -> None:
         try:
