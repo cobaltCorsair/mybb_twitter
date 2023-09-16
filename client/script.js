@@ -10,13 +10,19 @@ socket.on('connect', () => {
     socket.emit('join', {room: 'room'});
 });
 socket.on('new tweet', data => {
-    displayRecentMessages({messages: [data], hasMoreMessages: true});
+    if (!getIgnoredUsers().includes(data.user_id)) {
+        displayRecentMessages({messages: [data], hasMoreMessages: true});
+    }
 });
 socket.on('new comment', data => {
-    displayNewComment(data);
+    if (!getIgnoredUsers().includes(data.user_id)) {
+        displayNewComment(data);
+    }
 });
 socket.on('new subcomment', data => {
-    displayNewSubcomment(data);
+    if (!getIgnoredUsers().includes(data.user_id)) {
+        displayNewSubcomment(data);
+    }
 });
 socket.on('update message', data => {
     // Находим контейнер твита
@@ -89,6 +95,7 @@ socket.on('message likes', (data) => {
     }
 });
 socket.on('update ignored users', data => {
+    ignoredUsersList = data.map(user => user.id);
     updateIgnoredUsers(data);
 });
 // Когда страница загружается
@@ -103,6 +110,13 @@ const limit = 10;
 let loadingOlderTweets = false;
 const MAX_TWEETS_ON_PAGE = 15;
 let userSentTweet = false;
+let ignoredUsersList = [];
+const refreshFeed = () => {
+    offset = 0;  // Сброс смещения
+    const tweetsWrapper = document.getElementById('tweets-wrapper');
+    tweetsWrapper.innerHTML = '';  // Очистка текущих твитов
+    loadRecentMessages();  // Загрузка твитов с начала
+};
 const isWrapperAtBottom = (wrapper) => {
     return wrapper.scrollTop + wrapper.clientHeight === wrapper.scrollHeight;
 };
@@ -188,7 +202,6 @@ const loadRecentMessages = () => {
     socket.emit('get recent messages', { offset: offset, user_id: userId });
     offset += limit;
 };
-
 const displayRecentMessages = (data) => {
 
     const tweetsWrapper = document.getElementById('tweets-wrapper');
@@ -237,6 +250,9 @@ const displayRecentMessages = (data) => {
     loadingOlderTweets = false;
 };
 const addCommentsToTweet = (message, tweetContainerElement) => {
+    if (!message.comments || !Array.isArray(message.comments)) {
+        return;  // Если нет комментариев или comments не является массивом, прекращаем выполнение функции
+    }
     message.comments.forEach(commentData => {
         const existingComment = tweetContainerElement.querySelector(`.comment[data-comment-id="${commentData.comment_id}"]`);
         if (!existingComment) {
@@ -703,6 +719,9 @@ const addToBlacklist = (button) => {
         ignored_user_id: userId
     };
     socket.emit('ignore user', data);
+
+    // Обновляем ленту твитов после добавления пользователя в чёрный список
+    refreshFeed();
 }
 const unblockUser = (userId) => {
     const data = {
@@ -722,6 +741,9 @@ const unblockUser = (userId) => {
     if (blockedUsersPanel.children.length === 0) {
         blockedUsersPanel.innerHTML = '<div class="empty-list-message">Список игнорирования пуст.</div>';
     }
+
+    // Обновляем ленту твитов после удаления пользователя из чёрного списка
+    refreshFeed();
 }
 const updateIgnoredUsers = (ignoredUsers) => {
     const blockedUsersPanel = document.getElementById('blockedUsersPanel');
@@ -786,6 +808,7 @@ const getCommentIdFromElement = (element) => {
     }
     return null;
 };
+const getIgnoredUsers = () => ignoredUsersList;
 document.addEventListener("DOMContentLoaded", function () {
     initTweetLoadingEvents();
     loadRecentMessages();
