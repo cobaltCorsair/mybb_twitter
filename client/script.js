@@ -184,9 +184,11 @@ const removeExcessTweets = () => {
 };
 const loadRecentMessages = () => {
     loadingOlderTweets = true;
-    socket.emit('get recent messages', {offset: offset});
+    const userId = getCurrentUserId();  // Получите текущий user_id
+    socket.emit('get recent messages', { offset: offset, user_id: userId });
     offset += limit;
 };
+
 const displayRecentMessages = (data) => {
 
     const tweetsWrapper = document.getElementById('tweets-wrapper');

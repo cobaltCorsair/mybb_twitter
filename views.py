@@ -564,10 +564,11 @@ class GetRecentMessagesView(BaseView):
     @socketio.on('get recent messages')
     def handle_get_recent_messages_socket(self, data: dict):
         offset = data.get('offset', 0)
-        return self.handle_get_recent_messages(offset)
+        user_id = data.get('user_id')
+        return self.handle_get_recent_messages(user_id, offset)
 
-    def handle_get_recent_messages(self, offset=0):
-        response_data = user_service.get_recent_messages(offset=offset)
+    def handle_get_recent_messages(self, user_id, offset=0):
+        response_data = user_service.get_recent_messages(offset=offset, user_id=user_id)
         recent_messages_dicts = response_data['messages']
         self.socketio.emit('recent messages', response_data, room='room')
         return jsonify({"recent_messages": [message['message_id'] for message in recent_messages_dicts]}), 200

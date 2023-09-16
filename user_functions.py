@@ -246,8 +246,16 @@ class UserService:
     def get_top_users(self) -> list:
         return list(User.objects.order_by('-message', '-comment', '-likes'))
 
-    def get_recent_messages(self, offset=0, limit=10) -> dict:
-        recent_messages_objects = list(Message.objects.order_by('-created_at').skip(offset).limit(limit + 1))
+    def get_recent_messages(self, offset=0, limit=10, user_id=None) -> dict:
+        if user_id:
+            # Получаем пользователя по user_id
+            user = User.objects.get(forum_id=user_id)
+
+            # Исключаем сообщения от игнорируемых пользователей
+            recent_messages_objects = list(
+                Message.objects(user__nin=user.ignored_users).order_by('-created_at').skip(offset).limit(limit + 1))
+        else:
+            recent_messages_objects = list(Message.objects.order_by('-created_at').skip(offset).limit(limit + 1))
 
         has_more_messages = len(recent_messages_objects) > limit
         if has_more_messages:
@@ -261,7 +269,6 @@ class UserService:
             comments = Comment.objects(message=message.id)
             message_dict['comments'] = [MessageManager.comment_to_dict(comment) for comment in comments]
 
-
             # For each comment, fetch subcomments
             for comment_dict in message_dict['comments']:
                 subcomments = SubComment.objects(parent_comment=comment_dict['comment_id'])
@@ -271,8 +278,8 @@ class UserService:
             messages_dicts.append(message_dict)
 
         return {
-            'messages': messages_dicts,
-            'hasMoreMessages': has_more_messages
+            "messages": messages_dicts,
+            "has_more_messages": has_more_messages
         }
 
     def send_notification(self, user_id: int, text: str) -> None:
